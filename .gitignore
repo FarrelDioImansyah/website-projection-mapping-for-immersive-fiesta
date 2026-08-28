@@ -1,0 +1,22 @@
+# =============================================
+# .gitignore — Website Vidmap
+# =============================================
+
+# === ENVIRONMENT / CREDENTIALS (JANGAN COMMIT!) ===
+.env
+js/env.js
+
+# === OS FILES ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === EDITOR ===
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# === LOGS ===
+*.log
+npm-debug.log*

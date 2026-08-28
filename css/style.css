@@ -1,0 +1,561 @@
+/* =============================================
+   style.css — Design System & Styling
+   Website Vidmap | Interactive Projection
+   ============================================= */
+
+/* --- Google Fonts --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* --- CSS Variables (Design Tokens) --- */
+:root {
+    /* Colors */
+    --clr-bg:           #0f1117;
+    --clr-surface:      #1a1d27;
+    --clr-surface-2:    #22263a;
+    --clr-border:       #2e334d;
+    --clr-border-focus: #6366f1;
+
+    --clr-primary:      #6366f1;
+    --clr-primary-hover:#4f52d4;
+    --clr-primary-glow: rgba(99, 102, 241, 0.35);
+
+    --clr-text:         #e2e8f0;
+    --clr-text-muted:   #94a3b8;
+    --clr-text-label:   #cbd5e1;
+
+    --clr-success:      #34d399;
+    --clr-warning:      #fbbf24;
+    --clr-danger:       #f87171;
+
+    /* Spacing */
+    --space-xs:  0.25rem;
+    --space-sm:  0.5rem;
+    --space-md:  1rem;
+    --space-lg:  1.5rem;
+    --space-xl:  2rem;
+    --space-2xl: 3rem;
+
+    /* Radius */
+    --radius-sm: 0.5rem;
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.5rem;
+
+    /* Shadows */
+    --shadow-card:   0 8px 32px rgba(0, 0, 0, 0.4);
+    --shadow-glow:   0 0 24px var(--clr-primary-glow);
+    --shadow-btn:    0 4px 20px var(--clr-primary-glow);
+
+    /* Transitions */
+    --transition-fast:   150ms ease;
+    --transition-normal: 250ms ease;
+    --transition-slow:   400ms ease;
+}
+
+/* --- Reset & Base --- */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: var(--clr-bg);
+    color: var(--clr-text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-lg);
+    line-height: 1.6;
+
+    /* Subtle background grid pattern */
+    background-image:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.15), transparent),
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: auto, 40px 40px, 40px 40px;
+}
+
+/* --- Card (main container) --- */
+.card {
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    width: 100%;
+    max-width: 440px;
+    box-shadow: var(--shadow-card);
+    position: relative;
+    overflow: hidden;
+
+    /* Entrance animation */
+    animation: cardEntrance 0.5s var(--transition-slow) both;
+}
+
+/* Subtle top glow accent */
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--clr-primary), transparent);
+    opacity: 0.6;
+}
+
+/* --- Card Header --- */
+.card-header {
+    text-align: center;
+    margin-bottom: var(--space-xl);
+}
+
+.card-icon {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: var(--space-md);
+    animation: float 3s ease-in-out infinite;
+}
+
+.card-title {
+    font-size: 1.625rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #818cf8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+    margin-bottom: var(--space-xs);
+}
+
+.card-subtitle {
+    font-size: 0.875rem;
+    color: var(--clr-text-muted);
+    font-weight: 400;
+}
+
+/* --- Form --- */
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+/* --- Form Group --- */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.form-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--clr-text-label);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+/* --- Text Input --- */
+.form-input {
+    background: var(--clr-surface-2);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-md);
+    padding: 0.625rem var(--space-md);
+    color: var(--clr-text);
+    font-family: inherit;
+    font-size: 0.9375rem;
+    width: 100%;
+    outline: none;
+    transition: border-color var(--transition-normal), box-shadow var(--transition-normal), background var(--transition-normal);
+}
+
+.form-input::placeholder {
+    color: var(--clr-text-muted);
+    opacity: 0.7;
+}
+
+.form-input:focus {
+    border-color: var(--clr-border-focus);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    background: #272b40;
+}
+
+/* --- File Input --- */
+.form-file {
+    background: var(--clr-surface-2);
+    border: 2px dashed var(--clr-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    color: var(--clr-text-muted);
+    font-family: inherit;
+    font-size: 0.875rem;
+    width: 100%;
+    cursor: pointer;
+    outline: none;
+    transition: border-color var(--transition-normal), background var(--transition-normal);
+}
+
+.form-file:hover,
+.form-file:focus {
+    border-color: var(--clr-primary);
+    background: rgba(99, 102, 241, 0.05);
+}
+
+.form-file::file-selector-button {
+    background: var(--clr-primary);
+    color: white;
+    font-family: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: var(--space-xs) var(--space-md);
+    margin-right: var(--space-md);
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.form-file::file-selector-button:hover {
+    background: var(--clr-primary-hover);
+}
+
+/* --- Submit Button --- */
+.btn-submit {
+    background: linear-gradient(135deg, var(--clr-primary) 0%, #4f46e5 100%);
+    color: white;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 0.8125rem var(--space-lg);
+    width: 100%;
+    cursor: pointer;
+    margin-top: var(--space-xs);
+    box-shadow: var(--shadow-btn);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), opacity var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.01em;
+}
+
+.btn-submit::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.btn-submit:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px var(--clr-primary-glow);
+}
+
+.btn-submit:hover:not(:disabled)::after {
+    opacity: 1;
+}
+
+.btn-submit:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* --- Status Message --- */
+.status {
+    display: none;
+    font-size: 0.875rem;
+    text-align: center;
+    font-weight: 500;
+    padding: 0.625rem var(--space-md);
+    border-radius: var(--radius-sm);
+    animation: fadeIn 0.3s ease;
+}
+
+.status.visible {
+    display: block;
+}
+
+.status.loading {
+    color: var(--clr-warning);
+    background: rgba(251, 191, 36, 0.08);
+    border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+.status.success {
+    color: var(--clr-success);
+    background: rgba(52, 211, 153, 0.08);
+    border: 1px solid rgba(52, 211, 153, 0.2);
+}
+
+.status.error {
+    color: var(--clr-danger);
+    background: rgba(248, 113, 113, 0.08);
+    border: 1px solid rgba(248, 113, 113, 0.2);
+}
+
+/* --- Divider / Footer --- */
+.card-footer {
+    margin-top: var(--space-lg);
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--clr-text-muted);
+    opacity: 0.6;
+}
+
+/* --- Animations --- */
+@keyframes cardEntrance {
+    from {
+        opacity: 0;
+        transform: translateY(24px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-6px); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Spinner inside button when loading --- */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.btn-submit.loading-state::before {
+    content: '';
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin-right: 0.5em;
+    vertical-align: middle;
+}
+
+/* --- Responsive --- */
+@media (max-width: 480px) {
+    body {
+        padding: var(--space-md);
+        align-items: flex-start;
+        padding-top: var(--space-xl);
+    }
+
+    .card {
+        padding: var(--space-lg);
+    }
+
+    .card-title {
+        font-size: 1.375rem;
+    }
+}
+
+/* =============================================
+   CAMERA / WebRTC UI
+   ============================================= */
+
+/* Helper: sembunyikan elemen */
+.hidden {
+    display: none !important;
+}
+
+/* --- Tombol "Buka Kamera" (state idle) --- */
+.btn-camera-open {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    width: 100%;
+    padding: 0.75rem var(--space-md);
+    background: var(--clr-surface-2);
+    border: 2px dashed var(--clr-border);
+    border-radius: var(--radius-md);
+    color: var(--clr-text-muted);
+    font-family: inherit;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color var(--transition-normal), color var(--transition-normal), background var(--transition-normal);
+}
+
+.btn-camera-open:hover {
+    border-color: var(--clr-primary);
+    color: var(--clr-text);
+    background: rgba(99, 102, 241, 0.06);
+}
+
+/* --- Camera Wrapper (video preview area) --- */
+.camera-wrapper {
+    position: relative;
+    width: 100%;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: #000;
+    aspect-ratio: 4 / 3;
+    border: 1px solid var(--clr-border);
+}
+
+/* Live video element — mirror horizontal untuk kamera depan */
+.camera-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transform: scaleX(-1); /* Mirror = lebih natural untuk selfie */
+}
+
+/* --- Camera Controls Bar (di bawah video) --- */
+.camera-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-md) var(--space-lg);
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
+}
+
+/* --- Tombol aksi kecil (batal & flip) --- */
+.btn-cam-action {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background var(--transition-fast), transform var(--transition-fast);
+}
+
+.btn-cam-cancel {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+}
+
+.btn-cam-cancel:hover {
+    background: rgba(248, 113, 113, 0.4);
+    transform: scale(1.1);
+}
+
+.btn-cam-flip {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+}
+
+.btn-cam-flip:hover {
+    background: rgba(99, 102, 241, 0.4);
+    transform: scale(1.1) rotate(180deg);
+}
+
+/* --- Shutter Button (tombol capture besar di tengah) --- */
+.btn-shutter {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 3px solid white;
+    background: rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform var(--transition-fast), background var(--transition-fast);
+    position: relative;
+    padding: 0;
+}
+
+.btn-shutter:hover {
+    transform: scale(1.08);
+    background: rgba(255, 255, 255, 0.35);
+}
+
+.btn-shutter:active {
+    transform: scale(0.92);
+}
+
+/* Inner circle dari shutter */
+.shutter-ring {
+    display: block;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: white;
+    transition: transform var(--transition-fast);
+}
+
+.btn-shutter:active .shutter-ring {
+    transform: scale(0.88);
+}
+
+/* --- Photo Result Preview --- */
+.photo-result {
+    position: relative;
+    width: 100%;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--clr-border);
+    aspect-ratio: 4 / 3;
+    background: #000;
+}
+
+.captured-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+/* Tombol Ulangi (overlay di pojok kanan atas) */
+.btn-retake {
+    position: absolute;
+    top: var(--space-sm);
+    right: var(--space-sm);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 999px;
+    color: white;
+    font-family: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--transition-fast), transform var(--transition-fast);
+}
+
+.btn-retake:hover {
+    background: rgba(99, 102, 241, 0.6);
+    transform: scale(1.04);
+}
