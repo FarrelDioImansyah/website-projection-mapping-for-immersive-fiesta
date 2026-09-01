@@ -4,24 +4,36 @@
    ============================================= */
 
 /* --- Google Fonts --- */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;600;700&family=Silkscreen:wght@400;700&family=Press+Start+2P&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
 
 /* --- CSS Variables (Design Tokens) --- */
 :root {
-    /* Colors */
-    --clr-bg:           #0f1117;
-    --clr-surface:      #1a1d27;
-    --clr-surface-2:    #22263a;
-    --clr-border:       #2e334d;
-    --clr-border-focus: #6366f1;
+    /* 
+       Theme: IMMERSIVE FIESTA 2026
+       - #240045 = 75% (Deep Dark Nebula Purple Surface)
+       - #C77DFF = 25% (Vibrant Lilac Neon Glow, Highlights, Buttons)
+       - Typography = #ffffff (Pure White for all UI elements)
+       - Title Font = 'Pixelify Sans', 'Silkscreen', monospace
+       - Body Font = 'Plus Jakarta Sans', 'Inter', sans-serif
+    */
+    --font-pixel:        'Pixelify Sans', 'Silkscreen', 'Press Start 2P', monospace;
+    --font-body:         'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
 
-    --clr-primary:      #6366f1;
-    --clr-primary-hover:#4f52d4;
-    --clr-primary-glow: rgba(99, 102, 241, 0.35);
+    --clr-bg:           #120022;
+    --clr-surface:      #240045;
+    --clr-surface-2:    #31005e;
+    --clr-surface-3:    #3f0078;
+    --clr-border:       #5a189a;
+    --clr-border-glow:  rgba(199, 125, 255, 0.45);
+    --clr-border-focus: #C77DFF;
 
-    --clr-text:         #e2e8f0;
-    --clr-text-muted:   #94a3b8;
-    --clr-text-label:   #cbd5e1;
+    --clr-primary:      #C77DFF;
+    --clr-primary-hover:#d296ff;
+    --clr-primary-glow: rgba(199, 125, 255, 0.5);
+
+    --clr-text:         #ffffff;
+    --clr-text-muted:   #f0e6ff;
+    --clr-text-label:   #ffffff;
 
     --clr-success:      #34d399;
     --clr-warning:      #fbbf24;
@@ -37,12 +49,12 @@
 
     /* Radius */
     --radius-sm: 0.5rem;
-    --radius-md: 0.75rem;
-    --radius-lg: 1rem;
-    --radius-xl: 1.5rem;
+    --radius-md: 0.85rem;
+    --radius-lg: 1.25rem;
+    --radius-xl: 1.75rem;
 
     /* Shadows */
-    --shadow-card:   0 8px 32px rgba(0, 0, 0, 0.4);
+    --shadow-card:   0 12px 40px rgba(0, 0, 0, 0.7), 0 0 30px rgba(199, 125, 255, 0.2);
     --shadow-glow:   0 0 24px var(--clr-primary-glow);
     --shadow-btn:    0 4px 20px var(--clr-primary-glow);
 
@@ -67,7 +79,7 @@ html {
 }
 
 body {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: var(--font-body);
     background-color: var(--clr-bg);
     color: var(--clr-text);
     min-height: 100vh;
@@ -77,22 +89,31 @@ body {
     padding: var(--space-lg);
     line-height: 1.6;
 
-    /* Subtle background grid pattern */
+    /* Immersive Fiesta Starry Purple Universe Background */
     background-image:
-        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.15), transparent),
-        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-    background-size: auto, 40px 40px, 40px 40px;
+        radial-gradient(circle at 50% 10%, rgba(199, 125, 255, 0.28) 0%, transparent 60%),
+        radial-gradient(circle at 10% 90%, rgba(58, 0, 110, 0.9) 0%, transparent 50%),
+        radial-gradient(circle at 90% 90%, rgba(36, 0, 69, 0.95) 0%, transparent 50%),
+        /* Sparkling pixel stars */
+        radial-gradient(2px 2px at 20px 30px, #ffffff, rgba(0,0,0,0)),
+        radial-gradient(2px 2px at 40px 70px, rgba(199,125,255,0.9), rgba(0,0,0,0)),
+        radial-gradient(1px 1px at 90px 40px, #ffffff, rgba(0,0,0,0)),
+        radial-gradient(2px 2px at 130px 80px, #ffffff, rgba(0,0,0,0)),
+        radial-gradient(2px 2px at 160px 120px, rgba(199,125,255,0.8), rgba(0,0,0,0)),
+        radial-gradient(1.5px 1.5px at 220px 50px, #ffffff, rgba(0,0,0,0));
+    background-size: auto, auto, auto, 250px 250px, 200px 200px, 180px 180px, 300px 300px, 220px 220px, 280px 280px;
 }
 
-/* --- Card (main container) --- */
+/* --- Card (Poster Container with Dual Rounded Border) --- */
 .card {
     background: var(--clr-surface);
-    border: 1px solid var(--clr-border);
+    border: 2px solid var(--clr-border);
+    outline: 1px solid rgba(199, 125, 255, 0.3);
+    outline-offset: -6px;
     border-radius: var(--radius-xl);
-    padding: var(--space-xl);
+    padding: var(--space-xl) var(--space-lg);
     width: 100%;
-    max-width: 440px;
+    max-width: 460px;
     box-shadow: var(--shadow-card);
     position: relative;
     overflow: hidden;
@@ -108,39 +129,115 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--clr-primary), transparent);
-    opacity: 0.6;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--clr-primary), #ffffff, var(--clr-primary), transparent);
+    opacity: 0.9;
 }
 
-/* --- Card Header --- */
+/* --- Top Branding Bar (PENS TRM & IMMERSIVE FIESTA) --- */
+.top-branding-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: var(--space-sm);
+    margin-bottom: var(--space-md);
+    border-bottom: 1px solid rgba(199, 125, 255, 0.18);
+}
+
+.brand-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.brand-badge-pens {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: 0.05em;
+}
+
+.brand-badge-trm {
+    font-family: var(--font-body);
+    font-size: 0.7rem;
+    font-weight: 800;
+    background: rgba(199, 125, 255, 0.25);
+    color: #ffffff;
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(199, 125, 255, 0.4);
+}
+
+.brand-right {
+    display: flex;
+    align-items: center;
+}
+
+.brand-badge-fiesta {
+    font-family: var(--font-pixel);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.08em;
+}
+
+/* --- Card Header (Poster Style) --- */
 .card-header {
     text-align: center;
-    margin-bottom: var(--space-xl);
+    margin-bottom: var(--space-lg);
+    position: relative;
 }
 
-.card-icon {
-    font-size: 2.5rem;
-    display: block;
-    margin-bottom: var(--space-md);
-    animation: float 3s ease-in-out infinite;
+.year-badges-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 320px;
+    margin: 0 auto -6px auto;
+    padding: 0 var(--space-md);
+}
+
+.pixel-badge {
+    font-family: var(--font-pixel);
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.1em;
+    text-shadow: 0 0 8px rgba(199, 125, 255, 0.8);
 }
 
 .card-title {
-    font-size: 1.625rem;
-    font-weight: 800;
-    background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #818cf8 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    letter-spacing: -0.02em;
+    font-family: var(--font-pixel);
+    font-size: 2.35rem;
+    font-weight: 700;
+    line-height: 1.05;
+    color: #ffffff;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin: var(--space-xs) 0;
+    text-shadow:
+        3px 3px 0px #120022,
+        0 0 20px rgba(199, 125, 255, 0.75);
+}
+
+.card-tagline {
+    font-family: var(--font-pixel);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: #ffffff;
+    letter-spacing: 0.06em;
     margin-bottom: var(--space-xs);
+    opacity: 0.95;
+    text-shadow: 0 0 8px rgba(199, 125, 255, 0.6);
 }
 
 .card-subtitle {
-    font-size: 0.875rem;
-    color: var(--clr-text-muted);
+    font-size: 0.8125rem;
+    color: rgba(255, 255, 255, 0.8);
     font-weight: 400;
+    max-width: 360px;
+    margin: 0 auto;
 }
 
 /* --- Form --- */
@@ -159,8 +256,8 @@ body {
 
 .form-label {
     font-size: 0.8125rem;
-    font-weight: 600;
-    color: var(--clr-text-label);
+    font-weight: 700;
+    color: #ffffff;
     letter-spacing: 0.03em;
     text-transform: uppercase;
 }
@@ -171,7 +268,7 @@ body {
     border: 1px solid var(--clr-border);
     border-radius: var(--radius-md);
     padding: 0.625rem var(--space-md);
-    color: var(--clr-text);
+    color: #ffffff;
     font-family: inherit;
     font-size: 0.9375rem;
     width: 100%;
@@ -180,14 +277,13 @@ body {
 }
 
 .form-input::placeholder {
-    color: var(--clr-text-muted);
-    opacity: 0.7;
+    color: rgba(255, 255, 255, 0.55);
 }
 
 .form-input:focus {
     border-color: var(--clr-border-focus);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-    background: #272b40;
+    box-shadow: 0 0 0 3px rgba(199, 125, 255, 0.25);
+    background: var(--clr-surface-3);
 }
 
 /* --- File Input --- */
@@ -196,7 +292,7 @@ body {
     border: 2px dashed var(--clr-border);
     border-radius: var(--radius-md);
     padding: var(--space-md);
-    color: var(--clr-text-muted);
+    color: #ffffff;
     font-family: inherit;
     font-size: 0.875rem;
     width: 100%;
@@ -208,15 +304,15 @@ body {
 .form-file:hover,
 .form-file:focus {
     border-color: var(--clr-primary);
-    background: rgba(99, 102, 241, 0.05);
+    background: rgba(199, 125, 255, 0.08);
 }
 
 .form-file::file-selector-button {
     background: var(--clr-primary);
-    color: white;
+    color: #ffffff;
     font-family: inherit;
     font-size: 0.8125rem;
-    font-weight: 600;
+    font-weight: 700;
     border: none;
     border-radius: var(--radius-sm);
     padding: var(--space-xs) var(--space-md);
@@ -231,11 +327,11 @@ body {
 
 /* --- Submit Button --- */
 .btn-submit {
-    background: linear-gradient(135deg, var(--clr-primary) 0%, #4f46e5 100%);
-    color: white;
+    background: linear-gradient(135deg, #C77DFF 0%, #9d4edd 50%, #7b2cbf 100%);
+    color: #ffffff;
     font-family: inherit;
     font-size: 1rem;
-    font-weight: 700;
+    font-weight: 800;
     border: none;
     border-radius: var(--radius-md);
     padding: 0.8125rem var(--space-lg);
@@ -396,18 +492,18 @@ body {
     background: var(--clr-surface-2);
     border: 2px dashed var(--clr-border);
     border-radius: var(--radius-md);
-    color: var(--clr-text-muted);
+    color: #ffffff;
     font-family: inherit;
     font-size: 0.9375rem;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     transition: border-color var(--transition-normal), color var(--transition-normal), background var(--transition-normal);
 }
 
 .btn-camera-open:hover {
     border-color: var(--clr-primary);
-    color: var(--clr-text);
-    background: rgba(99, 102, 241, 0.06);
+    color: #ffffff;
+    background: rgba(199, 125, 255, 0.12);
 }
 
 /* --- Camera Wrapper (video preview area) --- */
@@ -440,40 +536,44 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: var(--space-md) var(--space-lg);
-    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
+    background: linear-gradient(to top, rgba(20, 0, 38, 0.85) 0%, transparent 100%);
 }
 
 /* --- Tombol aksi kecil (batal & flip) --- */
 .btn-cam-action {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
+    min-width: 68px;
+    height: 38px;
+    padding: 0 14px;
+    border-radius: 999px;
     border: none;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    font-family: inherit;
+    font-size: 0.8125rem;
+    font-weight: 700;
     transition: background var(--transition-fast), transform var(--transition-fast);
 }
 
 .btn-cam-cancel {
     background: rgba(255, 255, 255, 0.15);
-    color: white;
+    color: #ffffff;
 }
 
 .btn-cam-cancel:hover {
     background: rgba(248, 113, 113, 0.4);
-    transform: scale(1.1);
+    transform: scale(1.05);
 }
 
 .btn-cam-flip {
     background: rgba(255, 255, 255, 0.15);
-    color: white;
+    color: #ffffff;
 }
 
 .btn-cam-flip:hover {
-    background: rgba(99, 102, 241, 0.4);
-    transform: scale(1.1) rotate(180deg);
+    background: rgba(199, 125, 255, 0.4);
+    transform: scale(1.05);
 }
 
 /* --- Shutter Button (tombol capture besar di tengah) --- */
@@ -481,8 +581,8 @@ body {
     width: 64px;
     height: 64px;
     border-radius: 50%;
-    border: 3px solid white;
-    background: rgba(255, 255, 255, 0.2);
+    border: 3px solid #ffffff;
+    background: rgba(199, 125, 255, 0.3);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -494,7 +594,7 @@ body {
 
 .btn-shutter:hover {
     transform: scale(1.08);
-    background: rgba(255, 255, 255, 0.35);
+    background: rgba(199, 125, 255, 0.5);
 }
 
 .btn-shutter:active {
@@ -507,7 +607,7 @@ body {
     width: 46px;
     height: 46px;
     border-radius: 50%;
-    background: white;
+    background: #ffffff;
     transition: transform var(--transition-fast);
 }
 
@@ -543,19 +643,613 @@ body {
     align-items: center;
     gap: 6px;
     padding: 6px 14px;
-    background: rgba(0, 0, 0, 0.55);
+    background: rgba(36, 0, 69, 0.75);
     backdrop-filter: blur(6px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(199, 125, 255, 0.35);
     border-radius: 999px;
-    color: white;
+    color: #ffffff;
     font-family: inherit;
     font-size: 0.8125rem;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     transition: background var(--transition-fast), transform var(--transition-fast);
 }
 
 .btn-retake:hover {
-    background: rgba(99, 102, 241, 0.6);
+    background: var(--clr-primary);
+    color: #ffffff;
     transform: scale(1.04);
 }
+
+/* =============================================
+   MULTI-STEP / WIZARD STYLING
+   ============================================= */
+
+/* Sembunyikan content step secara default */
+.step-content {
+    display: none;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity var(--transition-normal), transform var(--transition-normal);
+}
+
+/* Tampilkan jika aktif */
+.step-content.active {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+    opacity: 1;
+    transform: translateY(0);
+    animation: stepEntrance 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes stepEntrance {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Indikator Langkah Aktif */
+.step-header-indicator {
+    font-family: var(--font-pixel);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #ffffff;
+    background: rgba(199, 125, 255, 0.2);
+    padding: 0.4rem var(--space-sm);
+    border-radius: var(--radius-sm);
+    text-align: center;
+    border: 1px solid rgba(199, 125, 255, 0.45);
+    box-shadow: 0 0 12px rgba(199, 125, 255, 0.2);
+    margin-bottom: 2px;
+}
+
+/* Navigasi Buttons container */
+.step-nav-buttons {
+    display: flex;
+    gap: var(--space-md);
+    width: 100%;
+}
+
+.btn-nav {
+    font-family: inherit;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 0.75rem var(--space-md);
+    cursor: pointer;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast), opacity var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+}
+
+.btn-next {
+    flex: 2;
+    background: linear-gradient(135deg, #C77DFF 0%, #9d4edd 50%, #7b2cbf 100%);
+    color: #ffffff;
+    box-shadow: var(--shadow-btn);
+}
+
+.btn-next:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--clr-primary-glow);
+}
+
+.btn-next:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-back {
+    flex: 1;
+    background: var(--clr-surface-2);
+    border: 1px solid var(--clr-border);
+    color: #ffffff;
+}
+
+.btn-back:hover {
+    background: var(--clr-surface-3);
+    border-color: var(--clr-primary);
+    color: #ffffff;
+}
+
+/* =============================================
+   STEP 2: TWIBBON EDITOR
+   ============================================= */
+
+.editor-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.editor-canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--clr-border);
+    touch-action: none;   /* Matikan scroll browser saat touch di canvas */
+    cursor: grab;
+    user-select: none;
+    background: #111;
+}
+
+.editor-canvas:active {
+    cursor: grabbing;
+}
+
+.editor-hint {
+    font-size: 0.75rem;
+    color: #ffffff;
+    text-align: center;
+    margin: 0;
+    opacity: 0.9;
+}
+
+/* Tombol Kontrol Zoom */
+.editor-controls {
+    display: flex;
+    gap: var(--space-sm);
+    justify-content: center;
+    width: 100%;
+}
+
+.btn-editor-ctrl {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: var(--clr-surface-2);
+    border: 1px solid var(--clr-border);
+    color: #ffffff;
+    border-radius: var(--radius-md);
+    padding: 0.55rem var(--space-sm);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.btn-editor-ctrl:hover {
+    background: var(--clr-surface-3);
+    border-color: var(--clr-primary);
+    transform: translateY(-1px);
+}
+
+.btn-editor-ctrl:active {
+    transform: scale(0.97);
+}
+
+.btn-editor-reset {
+    color: #ffffff;
+    flex: 0.8;
+}
+
+/* Preview lama (img) diganti canvas — sembunyikan elemen lama jika masih ada */
+.preview-border-wrapper {
+    display: none;
+}
+
+.border-selector-container-step {
+    background: var(--clr-surface-2);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.border-selector-title {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.border-options-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-sm);
+}
+
+/* Tombol Grid Opsi Border */
+.border-grid-btn {
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-sm) var(--space-xs);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.border-grid-btn:hover {
+    transform: translateY(-2px);
+    border-color: var(--clr-primary);
+}
+
+.border-grid-btn.active {
+    border-color: var(--clr-primary);
+    background: rgba(199, 125, 255, 0.18);
+    box-shadow: 0 0 12px var(--clr-primary-glow);
+}
+
+/* Thumbnail Gambar Mini di tombol */
+.border-thumb {
+    width: 60px;
+    height: 45px;
+    border-radius: 4px;
+    background-size: cover;
+    background-position: center;
+    background-color: #111;
+    border: 1px solid rgba(199, 125, 255, 0.2);
+}
+
+.thumb-none {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.border-thumb-label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: #ffffff;
+    text-align: center;
+}
+
+.border-grid-btn.active .border-thumb-label {
+    color: #ffffff;
+}
+
+/* =============================================
+   NAME STICKER SETTINGS CARD
+   ============================================= */
+
+.sticker-settings-card {
+    background: var(--clr-surface-2);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    transition: border-color var(--transition-normal);
+}
+
+.sticker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: var(--space-xs);
+    border-bottom: 1px solid rgba(199, 125, 255, 0.15);
+}
+
+.sticker-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.sticker-icon {
+    font-size: 1.25rem;
+}
+
+.sticker-title {
+    font-size: 0.875rem;
+    font-weight: 800;
+    color: #ffffff;
+    display: block;
+    line-height: 1.2;
+}
+
+.sticker-subtitle {
+    font-size: 0.6875rem;
+    color: rgba(255, 255, 255, 0.75);
+    display: block;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    cursor: pointer;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--clr-surface);
+    border-radius: 999px;
+    transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid var(--clr-border);
+}
+
+.toggle-slider::before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 2px;
+    bottom: 2px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background-color: var(--clr-primary);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(20px);
+}
+
+/* Sticker Body */
+.sticker-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    transition: opacity var(--transition-normal), max-height var(--transition-normal);
+}
+
+.sticker-body.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.sticker-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.sticker-field-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sticker-field-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.sticker-val-badge {
+    font-size: 0.6875rem;
+    font-weight: 800;
+    background: rgba(199, 125, 255, 0.2);
+    color: #ffffff;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--clr-primary);
+}
+
+.sticker-input {
+    padding: 0.5rem var(--space-md);
+    font-size: 0.875rem;
+}
+
+/* Size Slider & Step Buttons */
+.sticker-size-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.btn-sticker-step {
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    color: #ffffff;
+    border-radius: var(--radius-sm);
+    min-width: 32px;
+    height: 32px;
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background var(--transition-fast), transform var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.btn-sticker-step:hover {
+    background: var(--clr-surface-3);
+    border-color: var(--clr-primary);
+    transform: scale(1.05);
+}
+
+.sticker-range {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-radius: 999px;
+    outline: none;
+}
+
+.sticker-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--clr-primary);
+    cursor: pointer;
+    box-shadow: 0 0 10px var(--clr-primary-glow);
+    transition: transform var(--transition-fast);
+}
+
+.sticker-range::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+/* Action button inside sticker card */
+.sticker-actions-row {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-sticker-action {
+    background: transparent;
+    border: 1px dashed var(--clr-primary);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    width: 100%;
+}
+
+.btn-sticker-action:hover {
+    background: rgba(199, 125, 255, 0.15);
+    border-color: #ffffff;
+    color: #ffffff;
+}
+
+/* =============================================
+   STEP 3: CONFIRMATION STYLING
+   ============================================= */
+
+.confirm-preview-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.final-preview-photo {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--clr-border);
+    display: block;
+}
+
+.confirm-meta-card {
+    background: var(--clr-surface-2);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.confirm-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border-bottom: 1px solid rgba(199, 125, 255, 0.1);
+    padding-bottom: 6px;
+}
+
+.confirm-meta-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.confirm-meta-label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.confirm-meta-val {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+/* =============================================
+   FOOTER SOCIAL PILL (Poster Style)
+   ============================================= */
+
+.card-footer {
+    margin-top: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+    text-align: center;
+}
+
+.footer-social-pill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--space-sm) var(--space-md);
+    background: rgba(30, 0, 56, 0.85);
+    border: 1px solid rgba(199, 125, 255, 0.4);
+    border-radius: 999px;
+    padding: 0.45rem var(--space-lg);
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.footer-social-pill span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    opacity: 0.95;
+}
+
+.footer-copy {
+    font-size: 0.6875rem;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 0.02em;
+}
+
+

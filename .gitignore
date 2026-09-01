@@ -17,6 +17,15 @@ desktop.ini
 *.swp
 *.swo
 
+# === NODE.JS ===
+node_modules/
+package-lock.json
+
+# === SSL CERTIFICATES (jangan commit private key!) ===
+*.pem
+cert.pem
+cert-key.pem
+
 # === LOGS ===
 *.log
 npm-debug.log*

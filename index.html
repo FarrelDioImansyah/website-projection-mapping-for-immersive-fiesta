@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- SEO -->
     <title>Join the Projection! | Interactive Video Mapping</title>
-    <meta name="description" content="Isi data kamu untuk memunculkan robotmu di layar proyeksi interaktif. Upload foto dan pesan, dan saksikan kamu muncul di layar!">
+    <meta name="description"
+        content="Isi data kamu untuk memunculkan robotmu di layar proyeksi interaktif. Upload foto dan pesan, dan saksikan kamu muncul di layar!">
 
     <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23C77DFF'/></svg>">
 
     <!-- Stylesheet -->
     <link rel="stylesheet" href="css/style.css">
@@ -18,110 +21,301 @@
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <!-- Image Compression Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/browser-image-compression/2.0.2/browser-image-compression.min.js" defer></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/browser-image-compression/2.0.2/browser-image-compression.min.js"
+        defer></script>
 
     <!-- App Scripts (load order matters: env → config → app) -->
     <script src="js/env.js" defer></script>
     <script src="js/config.js" defer></script>
     <script src="js/app.js" defer></script>
 </head>
+
 <body>
 
     <!-- Main Card -->
     <div class="card" role="main">
 
+        <!-- Top Branding Bar (PENS TRM & IMMERSIVE FIESTA) -->
+        <div class="top-branding-bar">
+            <div class="brand-left">
+                <span class="brand-badge-pens">PENS</span>
+                <span class="brand-badge-trm">TRM</span>
+            </div>
+            <div class="brand-right">
+                <span class="brand-badge-fiesta">IMMERSIVE FIESTA</span>
+            </div>
+        </div>
+
         <!-- Header -->
         <header class="card-header">
-            <span class="card-icon" aria-hidden="true">🤖</span>
-            <h1 class="card-title">Join the Projection!</h1>
-            <p class="card-subtitle">Isi data untuk memunculkan robotmu di layar.</p>
+            <div class="year-badges-row">
+                <span class="pixel-badge">20</span>
+                <span class="pixel-badge">26</span>
+            </div>
+            <h1 class="card-title">IMMERSIVE<br>FIESTA</h1>
+            <p class="card-tagline">EXPLORE BEYOND REALITY, EXPAND YOUR IMAGINATION</p>
+            <p class="card-subtitle">Isi data untuk memunculkan avatar kamu di video mapping proyektor.</p>
         </header>
 
         <!-- Upload Form -->
         <form id="uploadForm" class="form" novalidate>
 
-            <!-- Nama -->
-            <div class="form-group">
-                <label class="form-label" for="nama">Nama</label>
-                <input
-                    type="text"
-                    id="nama"
-                    class="form-input"
-                    placeholder="Contoh: Firman"
-                    autocomplete="given-name"
-                    required
-                >
+            <!-- =============================================
+                 STEP 1: DATA & SELFIE
+                 ============================================= -->
+            <div id="step1" class="step-content active">
+
+                <!-- Nama -->
+                <div class="form-group">
+                    <label class="form-label" for="nama">Nama</label>
+                    <input type="text" id="nama" class="form-input" placeholder="Contoh: Firman"
+                        autocomplete="given-name" required>
+                </div>
+
+                <!-- Caption -->
+                <div class="form-group">
+                    <label class="form-label" for="caption">Caption / Pesan</label>
+                    <input type="text" id="caption" class="form-input" placeholder="Contoh: Hello World!"
+                        autocomplete="off">
+                </div>
+
+                <!-- Foto via Kamera WebRTC -->
+                <div class="form-group">
+                    <label class="form-label">Foto Selfie</label>
+
+                    <!-- State 1: Idle — tombol buka kamera -->
+                    <div id="cameraIdle">
+                        <button type="button" id="btnOpenCamera" class="btn-camera-open">
+                            Buka Kamera
+                        </button>
+                    </div>
+
+                    <!-- State 2: Kamera aktif — live preview + shutter -->
+                    <div id="cameraPreview" class="camera-wrapper hidden">
+                        <video id="cameraVideo" class="camera-video" autoplay playsinline muted></video>
+                        <div class="camera-controls">
+                            <button type="button" id="btnCancelCamera" class="btn-cam-action btn-cam-cancel"
+                                title="Batal">
+                                Batal
+                            </button>
+                            <button type="button" id="btnCapture" class="btn-shutter" title="Ambil Foto">
+                                <span class="shutter-ring"></span>
+                            </button>
+                            <button type="button" id="btnFlipCamera" class="btn-cam-action btn-cam-flip"
+                                title="Ganti Kamera">
+                                Flip
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- State 3: Foto diambil — preview hasil polos -->
+                    <div id="photoResult" class="photo-result hidden">
+                        <img id="capturedImg" class="captured-photo" alt="Foto yang diambil">
+                        <button type="button" id="btnRetake" class="btn-retake">
+                            Ulangi
+                        </button>
+                    </div>
+
+                    <!-- Canvas tersembunyi untuk capture frame -->
+                    <canvas id="captureCanvas" style="display:none;"></canvas>
+                </div>
+
+                <!-- Tombol Navigasi ke Step 2 (Hanya aktif jika foto terambil) -->
+                <button type="button" id="btnGoToStep2" class="btn-nav btn-next" disabled>
+                    Lanjut Pilih Border
+                </button>
             </div>
 
-            <!-- Caption -->
-            <div class="form-group">
-                <label class="form-label" for="caption">Caption / Pesan</label>
-                <input
-                    type="text"
-                    id="caption"
-                    class="form-input"
-                    placeholder="Contoh: Hello World!"
-                    autocomplete="off"
-                >
-            </div>
+            <!-- =============================================
+                 STEP 2: EDITOR TWIBBON INTERAKTIF
+                 ============================================= -->
+            <div id="step2" class="step-content">
 
-            <!-- Foto via Kamera WebRTC -->
-            <div class="form-group">
-                <label class="form-label">📷 Foto Selfie</label>
+                <!-- Canvas Editor Interaktif (Twibbon-style) -->
+                <div class="editor-wrapper">
+                    <canvas id="editorCanvas" class="editor-canvas"></canvas>
+                    <p class="editor-hint">Geser foto untuk mengatur posisi • Cubit untuk zoom</p>
+                </div>
 
-                <!-- State 1: Idle — tombol buka kamera -->
-                <div id="cameraIdle">
-                    <button type="button" id="btnOpenCamera" class="btn-camera-open">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                        Buka Kamera
+                <!-- Kontrol Zoom -->
+                <div class="editor-controls">
+                    <button type="button" id="btnZoomOut" class="btn-editor-ctrl" title="Perkecil">
+                        Perkecil
+                    </button>
+                    <button type="button" id="btnZoomReset" class="btn-editor-ctrl btn-editor-reset" title="Reset">
+                        Reset
+                    </button>
+                    <button type="button" id="btnZoomIn" class="btn-editor-ctrl" title="Perbesar">
+                        Perbesar
                     </button>
                 </div>
 
-                <!-- State 2: Kamera aktif — live preview + shutter -->
-                <div id="cameraPreview" class="camera-wrapper hidden">
-                    <video id="cameraVideo" class="camera-video" autoplay playsinline muted></video>
-                    <div class="camera-controls">
-                        <button type="button" id="btnCancelCamera" class="btn-cam-action btn-cam-cancel" title="Batal">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <!-- Opsi Pemilih Border Gambar Kustom -->
+                <div class="border-selector-container-step">
+                    <p class="border-selector-title">Pilih Desain Frame</p>
+                    <div class="border-options-grid">
+                        <button type="button" class="border-grid-btn active" data-border-id="0">
+                            <div class="border-thumb thumb-none">Polos</div>
+                            <span class="border-thumb-label">Polos</span>
                         </button>
-                        <button type="button" id="btnCapture" class="btn-shutter" title="Ambil Foto">
-                            <span class="shutter-ring"></span>
+                        <button type="button" class="border-grid-btn" data-border-id="1">
+                            <div class="border-thumb" style="background-image: url('assets/borders/BORDER_1.png')">
+                            </div>
+                            <span class="border-thumb-label">Frame 1</span>
                         </button>
-                        <button type="button" id="btnFlipCamera" class="btn-cam-action btn-cam-flip" title="Ganti Kamera">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+                        <button type="button" class="border-grid-btn" data-border-id="2">
+                            <div class="border-thumb" style="background-image: url('assets/borders/BORDER_2.png')">
+                            </div>
+                            <span class="border-thumb-label">Frame 2</span>
+                        </button>
+                        <button type="button" class="border-grid-btn" data-border-id="3">
+                            <div class="border-thumb" style="background-image: url('assets/borders/BORDER_3.png')">
+                            </div>
+                            <span class="border-thumb-label">Frame 3</span>
+                        </button>
+                        <button type="button" class="border-grid-btn" data-border-id="4">
+                            <div class="border-thumb" style="background-image: url('assets/borders/BORDER_4.png')">
+                            </div>
+                            <span class="border-thumb-label">Frame 4</span>
+                        </button>
+                        <button type="button" class="border-grid-btn" data-border-id="5">
+                            <div class="border-thumb" style="background-image: url('assets/borders/BORDER_5.png')">
+                            </div>
+                            <span class="border-thumb-label">Frame 5</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- State 3: Foto diambil — preview hasil -->
-                <div id="photoResult" class="photo-result hidden">
-                    <img id="capturedImg" class="captured-photo" alt="Foto yang diambil">
-                    <button type="button" id="btnRetake" class="btn-retake">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.96"/></svg>
-                        Ulangi
+
+
+                <!-- Tombol Navigasi Step 2 -->
+                <div class="step-nav-buttons">
+                    <button type="button" id="btnBackToStep1" class="btn-nav btn-back">
+                        Foto Ulang
+                    </button>
+                    <button type="button" id="btnGoToStep3" class="btn-nav btn-next">
+                        Lanjut
                     </button>
                 </div>
-
-                <!-- Canvas tersembunyi untuk capture frame -->
-                <canvas id="captureCanvas" style="display:none;"></canvas>
             </div>
 
-            <!-- Status Message -->
-            <div id="status" class="status" role="status" aria-live="polite"></div>
+            <!-- =============================================
+                 STEP 3: KONFIRMASI & EDIT STIKER
+                 ============================================= -->
+            <div id="step3" class="step-content">
 
-            <!-- Submit -->
-            <button type="submit" id="submitBtn" class="btn-submit">
-                Kirim ke Proyektor 🚀
-            </button>
+                <!-- Canvas Interaktif Step 3 (Stiker bisa di-drag & pinch) -->
+                <div class="editor-wrapper" style="position:relative;">
+                    <canvas id="stickerCanvas" class="editor-canvas"></canvas>
+                    <p class="editor-hint">Cubit untuk ukuran & miring • Geser stiker</p>
+                </div>
+
+                <!-- Panel Stiker Nama Kustom -->
+                <div class="sticker-settings-card">
+                    <div class="sticker-header">
+                        <div class="sticker-header-left">
+                            <div>
+                                <span class="sticker-title">Stiker Nama</span>
+                                <span class="sticker-subtitle">Cubit di kanvas untuk resize & rotasi</span>
+                            </div>
+                        </div>
+                        <label class="toggle-switch" title="Aktifkan/Nonaktifkan Stiker Nama">
+                            <input type="checkbox" id="toggleSticker" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div id="stickerControlsBody" class="sticker-body">
+                        <!-- Input Teks Stiker -->
+                        <div class="sticker-field">
+                            <label class="sticker-field-label" for="stickerTextInput">Teks Nama Stiker</label>
+                            <input type="text" id="stickerTextInput" class="form-input sticker-input"
+                                placeholder="Tulis nama stiker..." maxlength="25">
+                        </div>
+
+                        <!-- Ukuran Stiker Slider & Tombol -->
+                        <div class="sticker-field">
+                            <div class="sticker-field-header">
+                                <label class="sticker-field-label" for="stickerSizeSlider">Ukuran Stiker</label>
+                                <span id="stickerSizeVal" class="sticker-val-badge">100%</span>
+                            </div>
+                            <div class="sticker-size-row">
+                                <button type="button" id="btnStickerShrink" class="btn-sticker-step"
+                                    title="Kecilkan Stiker">-</button>
+                                <input type="range" id="stickerSizeSlider" class="sticker-range" min="40" max="220"
+                                    value="100" step="5">
+                                <button type="button" id="btnStickerEnlarge" class="btn-sticker-step"
+                                    title="Besarkan Stiker">+</button>
+                            </div>
+                        </div>
+
+                        <!-- Rotasi Stiker Slider & Tombol -->
+                        <div class="sticker-field">
+                            <div class="sticker-field-header">
+                                <label class="sticker-field-label" for="stickerRotateSlider">Rotasi (Kemiringan)</label>
+                                <span id="stickerRotateVal" class="sticker-val-badge">-3°</span>
+                            </div>
+                            <div class="sticker-size-row">
+                                <button type="button" id="btnStickerRotateLeft" class="btn-sticker-step"
+                                    title="Putar Kiri">Putar Kiri</button>
+                                <input type="range" id="stickerRotateSlider" class="sticker-range" min="-45" max="45"
+                                    value="-3" step="1">
+                                <button type="button" id="btnStickerRotateRight" class="btn-sticker-step"
+                                    title="Putar Kanan">Putar Kanan</button>
+                            </div>
+                        </div>
+
+                        <!-- Tombol Aksi Stiker -->
+                        <div class="sticker-actions-row">
+                            <button type="button" id="btnResetStickerPos" class="btn-sticker-action">
+                                Reset Posisi ke Banner Bawah
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="confirm-meta-card">
+                    <div class="confirm-meta-item">
+                        <span class="confirm-meta-label">Nama</span>
+                        <span id="confirmNama" class="confirm-meta-val">-</span>
+                    </div>
+                    <div class="confirm-meta-item">
+                        <span class="confirm-meta-label">Pesan / Caption</span>
+                        <span id="confirmCaption" class="confirm-meta-val">-</span>
+                    </div>
+                </div>
+
+                <!-- Status Message -->
+                <div id="status" class="status" role="status" aria-live="polite"></div>
+
+                <!-- Tombol Navigasi Step 3 -->
+                <div class="step-nav-buttons">
+                    <button type="button" id="btnBackToStep2" class="btn-nav btn-back">
+                        Ganti Border
+                    </button>
+                    <!-- Submit Button -->
+                    <button type="submit" id="submitBtn" class="btn-submit">
+                        Kirim ke Proyektor
+                    </button>
+                </div>
+            </div>
 
         </form>
 
         <!-- Footer -->
         <footer class="card-footer">
-            <p>Interactive Video Mapping &mdash; Powered by Supabase</p>
+            <div class="footer-social-pill">
+                <span>📸 @immersivefiesta</span>
+                <span>🎵 @trm.pens</span>
+                <span>▶ TRM PENS</span>
+                <span>🌐 trm.pens.ac.id</span>
+            </div>
+            <p class="footer-copy">Interactive Video Mapping &mdash; Immersive Fiesta 2026</p>
         </footer>
 
     </div>
 
 </body>
+
 </html>

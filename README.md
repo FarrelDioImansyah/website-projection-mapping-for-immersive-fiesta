@@ -59,14 +59,44 @@ const ENV = {
 
 Dapatkan kredensial dari: **[Supabase Dashboard](https://supabase.com/dashboard) → Settings → API**
 
-### 4. Buka di browser
-
-Buka `index.html` langsung di browser, atau gunakan live server:
+### 4. Jalankan Server Lokal (Node.js)
 
 ```bash
-# Menggunakan VS Code Live Server, atau:
-npx serve .
+# Install dependencies (sekali saja)
+npm install
+
+# Jalankan server
+npm start
 ```
+
+Server akan menampilkan URL di terminal:
+
+```
+🔒 HTTPS Server berjalan!
+
+  💻 PC      → https://localhost:3000
+  📱 HP/LAN  → https://192.168.x.x:3000
+```
+
+#### Akses dari HP
+
+1. Pastikan HP dan PC terhubung ke **WiFi yang sama**
+2. Buka browser HP dan akses `https://192.168.x.x:3000` (ganti IP sesuai yang tampil di terminal)
+3. Jika muncul peringatan **"Your connection is not private"**:
+   - Di Chrome: Ketik `thisisunsafe` (langsung tanpa klik apa-apa)
+   - Atau: Klik **Advanced** → **Proceed to ... (unsafe)**
+
+#### Setup Certificate (opsional, agar browser tidak warning)
+
+Jalankan sekali sebagai Administrator untuk install CA yang dipercaya browser:
+
+```bash
+# Di PowerShell sebagai Administrator:
+mkcert -install
+```
+
+Lalu di HP Android, install CA certificate dari:
+`%LOCALAPPDATA%\mkcert\rootCA.pem`
 
 > ⚠️ `getUserMedia` (WebRTC) membutuhkan **HTTPS** atau **localhost**. Tidak akan bekerja di `file://` atau `http://`.
 
@@ -107,9 +137,33 @@ with check (bucket_id = 'foto-robot');
 | `.env` | ❌ Gitignored | Dokumentasi lokal |
 | `.env.example` | ✅ Committed | Template referensi |
 
+## 🚀 Deployment ke Vercel
+
+Karena aplikasi ini menggunakan kamera (WebRTC), browser membutuhkan koneksi **HTTPS** yang aman agar kamera dapat dibuka di HP. Vercel secara otomatis menyediakan koneksi HTTPS gratis untuk proyek kamu!
+
+### Langkah-langkah Deploy:
+
+1. **Hubungkan Repo GitHub ke Vercel**:
+   - Masuk ke dashboard [Vercel](https://vercel.com).
+   - Klik **Add New** → **Project**, lalu impor repository GitHub proyek ini.
+
+2. **Atur Environment Variables**:
+   Sebelum klik **Deploy**, buka menu **Environment Variables** di Vercel dan tambahkan key-value berikut sesuai kredensial Supabase kamu:
+   - `SUPABASE_URL` = `https://your-project-id.supabase.co`
+   - `SUPABASE_ANON_KEY` = `your_anon_key_here`
+   - `DB_TABLE` = `pengunjung` (opsional, default: `pengunjung`)
+   - `STORAGE_BUCKET` = `foto-robot` (opsional, default: `foto-robot`)
+
+3. **Deploy!** 🚀
+   - Klik **Deploy**. Vercel akan otomatis mendeteksi script build di `package.json` untuk membuat file `js/env.js` dari Environment Variables di atas secara otomatis sebelum website ditayangkan.
+   - Setelah sukses, buka URL yang diberikan oleh Vercel di HP kamu (misalnya `https://your-project.vercel.app`). Fitur kamera di HP akan langsung berfungsi dengan aman!
+
+---
+
 ## 🛠️ Tech Stack
 
 - **Frontend**: HTML5, Vanilla CSS, Vanilla JS
 - **Camera**: WebRTC `getUserMedia` API
 - **Backend**: [Supabase](https://supabase.com) (Storage + PostgreSQL)
+- **Deployment**: [Vercel](https://vercel.com)
 - **Compression**: [browser-image-compression](https://github.com/Donaldcwl/browser-image-compression)

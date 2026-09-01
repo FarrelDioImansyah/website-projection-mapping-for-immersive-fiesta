@@ -1,0 +1,25 @@
+{
+  "name": "website-vidmap",
+  "version": "1.0.0",
+  "description": "Interactive Video Mapping — Website upload selfie untuk proyeksi interaktif",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "build": "node build.js",
+    "setup-cert": "mkcert -install && mkcert localhost 127.0.0.1 $(node -e \"const os=require('os');const ifaces=os.networkInterfaces();Object.values(ifaces).flat().filter(i=>i.family==='IPv4'&&!i.internal).forEach(i=>process.stdout.write(i.address+' '))\")"
+  },
+  "keywords": [
+    "video-mapping",
+    "supabase",
+    "webrtc"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "pngjs": "^7.0.0"
+  }
+}
