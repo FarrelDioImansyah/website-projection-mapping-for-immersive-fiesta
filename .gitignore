@@ -29,3 +29,7 @@ cert-key.pem
 # === LOGS ===
 *.log
 npm-debug.log*
+
+# === TEMPORARY / SCRATCH ===
+scratch/
+
