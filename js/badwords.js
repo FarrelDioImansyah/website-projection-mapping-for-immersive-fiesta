@@ -70,36 +70,24 @@ const BAD_WORDS = [
 ];
 
 /**
- * Memeriksa apakah teks mengandung kata-kata yang dilarang.
- * Mendukung deteksi leetspeak sederhana (contoh: 4nj1ng -> anjing).
+ * Menyensor kata-kata kasar dalam teks menjadi tanda bintang (misal: "anjing" -> "******")
  * 
- * @param {string} text - Teks yang akan dicek (Nama atau Caption)
- * @returns {boolean} - true jika mengandung kata terlarang, false jika aman
+ * @param {string} text - Teks input
+ * @returns {string} - Teks yang sudah disensor dengan bintang-bintang
  */
-function containsBadWords(text) {
-    if (!text || typeof text !== 'string') return false;
+function censorBadWords(text) {
+    if (!text || typeof text !== 'string') return '';
+    let result = text;
 
-    // 1. Normalisasi karakter leetspeak (angka -> huruf)
-    const normalized = text.toLowerCase()
-        .replace(/[@4]/g, 'a')
-        .replace(/[3]/g, 'e')
-        .replace(/[1!|]/g, 'i')
-        .replace(/[0]/g, 'o')
-        .replace(/[5$]/g, 's')
-        .replace(/[7]/g, 't')
-        .replace(/[^a-z0-9\s]/g, ' ');
-
-    // 2. Cek apakah ada kata yang cocok di dalam daftar BAD_WORDS
     for (const word of BAD_WORDS) {
-        const trimmed = word.trim().toLowerCase();
+        const trimmed = word.trim();
         if (!trimmed) continue;
 
-        // Cek pola kata penuh atau kemunculan dalam teks
-        const regex = new RegExp(`\\b${trimmed}\\b`, 'i');
-        if (regex.test(normalized) || normalized.includes(trimmed)) {
-            return true;
-        }
+        // Ganti kata kasar (case-insensitive) dengan jumlah bintang (*) sesuai panjang kata
+        const regex = new RegExp(trimmed, 'gi');
+        result = result.replace(regex, (match) => '*'.repeat(match.length));
     }
 
-    return false;
+    return result;
 }
+

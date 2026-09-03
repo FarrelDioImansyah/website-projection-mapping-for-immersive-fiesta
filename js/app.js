@@ -1052,21 +1052,13 @@ btnGoToStep2.addEventListener('click', () => {
         return;
     }
 
-    // Validasi Filter Kata Kasar / Toxic (Badwords)
-    if (typeof containsBadWords === 'function') {
-        if (containsBadWords(namaVal)) {
-            namaInput.focus();
-            showStatus('Nama mengandung kata yang tidak diperbolehkan!', 'error');
-            setTimeout(hideStatus, 3500);
-            return;
-        }
+    // Otomatis Sensor Kata Kasar menjadi Bintang-Bintang (***)
+    if (typeof censorBadWords === 'function') {
+        const censoredNama = censorBadWords(namaVal);
+        const censoredCaption = censorBadWords(captionVal);
 
-        if (captionVal && containsBadWords(captionVal)) {
-            captionInput.focus();
-            showStatus('Caption mengandung kata yang tidak diperbolehkan!', 'error');
-            setTimeout(hideStatus, 3500);
-            return;
-        }
+        namaInput.value = censoredNama;
+        captionInput.value = censoredCaption;
     }
 
     goToStep(2);
@@ -1211,16 +1203,13 @@ form.addEventListener('submit', async (e) => {
         return;
     }
 
-    // Filter Kata Kasar
-    if (typeof containsBadWords === 'function') {
-        if (containsBadWords(nama)) {
-            showStatus('Nama mengandung kata yang tidak diperbolehkan!', 'error');
-            return;
-        }
-        if (caption && containsBadWords(caption)) {
-            showStatus('Caption mengandung kata yang tidak diperbolehkan!', 'error');
-            return;
-        }
+    // Otomatis Sensor Kata Kasar menjadi Bintang-Bintang (***)
+    let cleanNama = nama;
+    let cleanCaption = caption;
+
+    if (typeof censorBadWords === 'function') {
+        cleanNama = censorBadWords(nama);
+        cleanCaption = censorBadWords(caption);
     }
 
     if (!editor.photoImg) {
@@ -1248,7 +1237,7 @@ form.addEventListener('submit', async (e) => {
 
         // Upload ke Supabase Storage & Simpan metadata ke database secara paralel/berurutan
         const imageUrl = await uploadToStorage(compressed);
-        await saveToDatabase(nama, caption, imageUrl);
+        await saveToDatabase(cleanNama, cleanCaption, imageUrl);
 
         // Beri waktu jeda animasi kosmik (~1.8 detik) agar transisi terasa smooth dan tidak kaku
         await new Promise(resolve => setTimeout(resolve, 1800));
