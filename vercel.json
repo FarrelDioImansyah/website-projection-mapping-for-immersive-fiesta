@@ -1,20 +1,15 @@
 {
-  "version": 2,
-  "cleanUrls": true,
-  "routes": [
+  "buildCommand": "node build.js",
+  "outputDirectory": ".",
+  "headers": [
     {
-      "src": "/js/env.js",
-      "dest": "/js/env.js",
-      "headers": {
-        "cache-control": "no-cache, no-store, must-revalidate"
-      }
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/js/env.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
     }
   ]
 }
