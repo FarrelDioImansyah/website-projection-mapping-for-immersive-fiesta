@@ -299,6 +299,13 @@ body {
     background: var(--clr-surface-3);
 }
 
+.form-input.input-error {
+    border-color: #ff4d6d !important;
+    box-shadow: 0 0 0 3px rgba(255, 77, 109, 0.35) !important;
+    background: rgba(255, 77, 109, 0.08) !important;
+}
+
+
 /* --- File Input --- */
 .form-file {
     background: var(--clr-surface-2);

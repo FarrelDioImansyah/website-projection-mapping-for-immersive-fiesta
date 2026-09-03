@@ -1018,9 +1018,47 @@ if (endingStep) {
     });
 }
 
+// === Real-time Bad Words Warning saat Pengunjung Mengetik ===
+const inputNama = document.getElementById('nama');
+const inputCaption = document.getElementById('caption');
 
+function validateInputRealtime(input, fieldName) {
+    if (!input) return;
+    const val = input.value.trim();
+    if (!val) {
+        input.classList.remove('input-error');
+        return;
+    }
+
+    if (typeof moderateText === 'function') {
+        const check = moderateText(val);
+        if (!check.allow) {
+            input.classList.add('input-error');
+            let msg = `${fieldName} mengandung kata yang tidak pantas!`;
+            if (check.hateWords.length > 0) msg = `${fieldName} mengandung ujaran kebencian!`;
+            if (check.provocationWords.length > 0) msg = `${fieldName} mengandung kata provokasi!`;
+            if (check.spam.isSpam) msg = `${fieldName} tidak boleh mengandung link / no HP!`;
+            showStatus(msg, 'error');
+            return;
+        }
+    } else if (typeof containsBadWords === 'function' && containsBadWords(val)) {
+        input.classList.add('input-error');
+        showStatus(`${fieldName} mengandung kata yang tidak pantas!`, 'error');
+        return;
+    }
+
+    input.classList.remove('input-error');
+}
+
+if (inputNama) {
+    inputNama.addEventListener('input', () => validateInputRealtime(inputNama, 'Nama'));
+}
+if (inputCaption) {
+    inputCaption.addEventListener('input', () => validateInputRealtime(inputCaption, 'Caption'));
+}
 
 // Step 1 -> Step 2
+
 
 btnGoToStep2.addEventListener('click', () => {
     // Validasi Nama wajib diisi sebelum lanjut
