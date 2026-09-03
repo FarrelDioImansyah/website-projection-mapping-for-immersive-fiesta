@@ -1033,11 +1033,40 @@ btnGoToStep2.addEventListener('click', () => {
         return;
     }
 
-    if (namaVal.length > 8) {
+    // Validasi Panjang Nama (Maksimal 10 Karakter)
+    if (namaVal.length > 10) {
         namaInput.focus();
-        showStatus('Nama maksimal 8 huruf!', 'error');
+        showStatus('Nama maksimal 10 huruf!', 'error');
         setTimeout(hideStatus, 3000);
         return;
+    }
+
+    const captionInput = document.getElementById('caption');
+    const captionVal = captionInput.value.trim();
+
+    // Validasi Panjang Caption (Maksimal 85 Karakter)
+    if (captionVal.length > 85) {
+        captionInput.focus();
+        showStatus('Caption maksimal 85 karakter!', 'error');
+        setTimeout(hideStatus, 3000);
+        return;
+    }
+
+    // Validasi Filter Kata Kasar / Toxic (Badwords)
+    if (typeof containsBadWords === 'function') {
+        if (containsBadWords(namaVal)) {
+            namaInput.focus();
+            showStatus('Nama mengandung kata yang tidak diperbolehkan!', 'error');
+            setTimeout(hideStatus, 3500);
+            return;
+        }
+
+        if (captionVal && containsBadWords(captionVal)) {
+            captionInput.focus();
+            showStatus('Caption mengandung kata yang tidak diperbolehkan!', 'error');
+            setTimeout(hideStatus, 3500);
+            return;
+        }
     }
 
     goToStep(2);
@@ -1171,6 +1200,28 @@ form.addEventListener('submit', async (e) => {
 
     const nama = document.getElementById('nama').value.trim();
     const caption = document.getElementById('caption').value.trim();
+
+    if (nama.length > 10) {
+        showStatus('Nama maksimal 10 huruf!', 'error');
+        return;
+    }
+
+    if (caption.length > 85) {
+        showStatus('Caption maksimal 85 karakter!', 'error');
+        return;
+    }
+
+    // Filter Kata Kasar
+    if (typeof containsBadWords === 'function') {
+        if (containsBadWords(nama)) {
+            showStatus('Nama mengandung kata yang tidak diperbolehkan!', 'error');
+            return;
+        }
+        if (caption && containsBadWords(caption)) {
+            showStatus('Caption mengandung kata yang tidak diperbolehkan!', 'error');
+            return;
+        }
+    }
 
     if (!editor.photoImg) {
         showStatus('Ambil foto selfie terlebih dahulu!', 'error');

@@ -265,6 +265,16 @@ body {
     text-transform: uppercase;
 }
 
+.input-limit-hint {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: rgba(199, 125, 255, 0.85);
+    text-transform: none;
+    letter-spacing: normal;
+    margin-left: 4px;
+}
+
+
 /* --- Text Input --- */
 .form-input {
     background: var(--clr-surface-2);

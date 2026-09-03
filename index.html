@@ -25,9 +25,10 @@
         src="https://cdnjs.cloudflare.com/ajax/libs/browser-image-compression/2.0.2/browser-image-compression.min.js"
         defer></script>
 
-    <!-- App Scripts (load order matters: env → config → app) -->
+    <!-- App Scripts (load order matters: env → config → badwords → app) -->
     <script src="js/env.js" defer></script>
     <script src="js/config.js" defer></script>
+    <script src="js/badwords.js" defer></script>
     <script src="js/app.js" defer></script>
 </head>
 
@@ -119,18 +120,18 @@
             <div id="step1" class="step-content">
 
 
-                <!-- Nama -->
+                <!-- Nama (Maksimal 10 Karakter) -->
                 <div class="form-group">
-                    <label class="form-label" for="nama">Nama</label>
+                    <label class="form-label" for="nama">Nama <span class="input-limit-hint">(Maks. 10 huruf)</span></label>
                     <input type="text" id="nama" class="form-input" placeholder="Contoh: Firman"
-                        autocomplete="given-name" maxlength="15" required>
+                        autocomplete="given-name" maxlength="10" required>
                 </div>
 
-                <!-- Caption -->
+                <!-- Caption (Maksimal 85 Karakter) -->
                 <div class="form-group">
-                    <label class="form-label" for="caption">Caption / Pesan</label>
+                    <label class="form-label" for="caption">Caption / Pesan <span class="input-limit-hint">(Maks. 85 karakter)</span></label>
                     <input type="text" id="caption" class="form-input" placeholder="Contoh: Hello World!"
-                        autocomplete="off">
+                        autocomplete="off" maxlength="85">
                 </div>
 
                 <!-- Foto via Kamera WebRTC -->
