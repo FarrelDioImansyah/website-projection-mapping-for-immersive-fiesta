@@ -72,7 +72,7 @@ let mediaStream = null;   // Active MediaStream
 let capturedBlob = null;   // Captured photo as Blob (used for upload)
 let facingMode = 'user'; // 'user' = depan, 'environment' = belakang
 let rawImageSrc = null;   // Menyimpan base64 dari foto asli (tanpa border)
-let selectedBorderId = 0;     // ID border terpilih (0 = polos)
+let selectedBorderId = 1;     // ID border terpilih (default: Frame 1)
 
 // Preload Custom Borders (PNG)
 const borderImages = {};
@@ -157,20 +157,34 @@ function stopStream() {
     }
 }
 
-/** Pindah ke langkah/halaman form tertentu */
+/** Pindah ke langkah/halaman form tertentu (0: Welcome, 1: Data & Selfie, 2: Editor & Submit, 3: Ending Thank You, 'loading': Cosmic Loading) */
 function goToStep(stepNum) {
-    stepContents.forEach((el, index) => {
-        el.classList.toggle('active', index === (stepNum - 1));
-    });
+    const step0 = document.getElementById('step0');   // Welcome Screen
+    const step1 = document.getElementById('step1');   // Data & Selfie
+    const step2 = document.getElementById('step2');   // Editor & Submit
+    const step3 = document.getElementById('step3');   // Ending Thank You Screen
+    const loadingScreen = document.getElementById('loadingScreen'); // Cosmic Loading Screen
 
-    if (stepNum === 3) {
-        // Tampilkan data konfirmasi
-        confirmNama.textContent = document.getElementById('nama').value.trim() || 'Tanpa Nama';
-        confirmCaption.textContent = document.getElementById('caption').value.trim() || 'Tanpa Caption';
-        // Inisialisasi canvas stiker Step 3
-        initStickerCanvas();
+    // Sembunyikan/tampilkan overlay screens (di luar card)
+    if (step0) step0.style.display = (stepNum === 0) ? '' : 'none';
+    if (step3) step3.style.display = (stepNum === 3) ? '' : 'none';
+    if (loadingScreen) loadingScreen.style.display = (stepNum === 'loading') ? '' : 'none';
+
+    // Sembunyikan/tampilkan card (header, form, footer)
+    const card = document.querySelector('.card');
+    if (card) {
+        card.style.display = (stepNum === 0 || stepNum === 3 || stepNum === 'loading') ? 'none' : '';
     }
+
+    // Step 1 & 2 di dalam form
+    if (step1) step1.classList.toggle('active', stepNum === 1);
+    if (step2) step2.classList.toggle('active', stepNum === 2);
 }
+
+// Inisialisasi awal ke Step 0 Welcome Screen
+goToStep(0);
+
+
 
 /** Ambil foto dari frame video saat ini menggunakan canvas */
 function capturePhoto() {
@@ -196,11 +210,11 @@ function capturePhoto() {
     // Flash animation
     flashEffect();
 
-    // Reset pilihan border visual ke polos (ID: 0) saat baru capture
-    selectedBorderId = 0;
+    // Reset pilihan border visual ke Frame 1 (ID: 1) saat baru capture
+    selectedBorderId = 1;
     borderButtons.forEach(btn => {
         const id = parseInt(btn.dataset.borderId, 10);
-        btn.classList.toggle('active', id === 0);
+        btn.classList.toggle('active', id === 1);
     });
 
     stopStream();
@@ -242,7 +256,7 @@ let sticker = {
     designX: 960,          // Posisi X di koordinat desain 1920x1080
     designY: 865,          // Posisi Y di koordinat desain 1920x1080
     scale: 1.0,            // Skala ukuran stiker (0.4 - 2.2)
-    rotation: -3,          // Derajat rotasi stiker (-45 s.d +45)
+    rotation: 0,           // Derajat rotasi stiker (-45 s.d +45)
     isDragging: false,
     dragOffsetDesignX: 0,
     dragOffsetDesignY: 0,
@@ -250,14 +264,14 @@ let sticker = {
     lastBounds: null       // Cache bounding box di koordinat canvas untuk hit-testing
 };
 
-// Posisi & rotasi default stiker di area banner bawah untuk tiap border (1920x1080)
+// Posisi & rotasi default teks nama di area kotak putih banner untuk tiap border (1920x1080)
 const BORDER_STICKER_DEFAULTS = {
     0: { x: 960, y: 920, rotation: 0 },
-    1: { x: 930, y: 865, rotation: -3 },
-    2: { x: 958, y: 868, rotation: -3 },
-    3: { x: 914, y: 875, rotation: -4 },
-    4: { x: 960, y: 870, rotation: -2 },
-    5: { x: 928, y: 870, rotation: 0 }
+    1: { x: 750, y: 850, rotation: -7 },
+    2: { x: 850, y: 850, rotation: 6 },
+    3: { x: 950, y: 830, rotation: -5.6 },
+    4: { x: 820, y: 870, rotation: -1.5 },
+    5: { x: 860, y: 825, rotation: -1 }
 };
 
 /**
@@ -372,106 +386,49 @@ function applyBorderClipMask(ctx, borderId, cw, ch) {
 }
 
 /**
- * Render Stiker Nama di atas kanvas (Layer Teratas)
- * Menggunakan font Berlin Sans FB dengan warna Hitam Bold & Rotasi.
- * @param {CanvasRenderingContext2D} ctx
- * @param {number} cw - Lebar canvas
- * @param {number} ch - Tinggi canvas
- * @param {boolean} isInteractive - Mode interaktif editor (tampilkan outline seleksi)
+ * Render Teks Nama Otomatis pada Frame Border (Layer Teratas)
+ * Menyesuaikan posisi & kemiringan (rotasi) kotak putih tiap border.
  */
-function drawNameSticker(ctx, cw, ch, isInteractive = false) {
-    if (!sticker.enabled || !sticker.text.trim()) {
-        sticker.lastBounds = null;
-        return;
-    }
+function drawAutoNameOnBorder(ctx, cw, ch) {
+    const namaInput = document.getElementById('nama');
+    const nameText = (namaInput ? namaInput.value.trim() : '').toUpperCase();
+    if (!nameText) return;
 
     const scaleX = cw / DESIGN_WIDTH;
     const scaleY = ch / DESIGN_HEIGHT;
 
-    const posX = sticker.designX * scaleX;
-    const posY = sticker.designY * scaleY;
+    const def = BORDER_STICKER_DEFAULTS[selectedBorderId] || BORDER_STICKER_DEFAULTS[0];
+
+    const posX = def.x * scaleX;
+    const posY = def.y * scaleY;
 
     // Ukuran dasar font pada desain 1920x1080
-    const baseFontSize = 64;
-    const fontSize = Math.max(16, Math.round(baseFontSize * sticker.scale * scaleX));
+    const baseFontSize = 60;
+    const fontSize = Math.max(16, Math.round(baseFontSize * scaleX));
 
     ctx.save();
     ctx.translate(posX, posY);
 
-    // Terapkan Rotasi
-    const rotRad = ((sticker.rotation || 0) * Math.PI) / 180;
+    // Terapkan Rotasi Kemiringan Kustom per Border Template
+    const rotRad = ((def.rotation || 0) * Math.PI) / 180;
     ctx.rotate(rotRad);
 
-    // Font Berlin Sans dengan warna Hitam Bold
+    // Font Berlin Sans / Trebuchet MS dengan warna Hitam Pekat
     const fontFamily = "'Berlin Sans FB', 'Berlin Sans FB Demi', 'Berlin Sans', 'Trebuchet MS', 'Arial Black', sans-serif";
-    const text = sticker.text.trim().toUpperCase();
 
     ctx.font = `bold ${fontSize}px ${fontFamily}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    const metrics = ctx.measureText(text);
-    const textWidth = metrics.width;
-    const textHeight = fontSize * 0.95;
-    const paddingX = Math.round(16 * sticker.scale * scaleX);
-    const paddingY = Math.round(8 * sticker.scale * scaleX);
-
-    const boxWidth = textWidth + paddingX * 2;
-    const boxHeight = textHeight + paddingY * 2;
-    const boxX = -boxWidth / 2;
-    const boxY = -boxHeight / 2;
-
-    // Simpan bounds untuk hit-testing saat drag & rotasi
-    sticker.lastBounds = {
-        cx: posX,
-        cy: posY,
-        width: boxWidth,
-        height: boxHeight,
-        rotation: sticker.rotation || 0
-    };
-
-    // Render Teks Nama: Hitam Bold Pekat
-    ctx.fillStyle = '#000000';
-    ctx.fillText(text, 0, 1 * scaleX);
-
-    // Jika sedang dalam editor dan di-drag, tampilkan garis bantu seleksi
-    if (isInteractive && sticker.isDragging) {
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([4, 4]);
-        ctx.strokeStyle = '#C77DFF';
-        ctx.strokeRect(boxX - 4, boxY - 4, boxWidth + 8, boxHeight + 8);
-    }
+    // Render Teks Nama di kotak putih border
+    ctx.fillStyle = '#111111';
+    ctx.fillText(nameText, 0, 1 * scaleX);
 
     ctx.restore();
 }
 
 /**
- * Cek apakah koordinat klik/sentuh (canvasX, canvasY) berada di dalam stiker nama (memperhitungkan rotasi).
- */
-function isPointInSticker(canvasX, canvasY) {
-    if (!sticker.enabled || !sticker.text.trim() || !sticker.lastBounds) return false;
-    const b = sticker.lastBounds;
-    const margin = 16; // Toleransi area sentuh
-
-    // Transformasi titik canvas ke koordinat lokal stiker yang tidak terotasi
-    const rad = ((b.rotation || 0) * Math.PI) / 180;
-    const cos = Math.cos(-rad);
-    const sin = Math.sin(-rad);
-    const dx = canvasX - b.cx;
-    const dy = canvasY - b.cy;
-
-    const localX = dx * cos - dy * sin;
-    const localY = dx * sin + dy * cos;
-
-    return (
-        Math.abs(localX) <= b.width / 2 + margin &&
-        Math.abs(localY) <= b.height / 2 + margin
-    );
-}
-
-/**
- * Render editor canvas (Step 2): foto + border TANPA stiker.
- * Stiker hanya ditampilkan di Step 3 (stickerCanvas).
+ * Render editor canvas (Step 2): foto + border + nama otomatis.
  */
 function renderEditor() {
     if (!editorCanvas || !editor.photoImg) return;
@@ -499,7 +456,9 @@ function renderEditor() {
             ctx.drawImage(borderImg, 0, 0, cw, ch);
         }
     }
-    // Step 2 tidak menggambar stiker — stiker diedit di Step 3
+
+    // --- 3. Gambar Teks Nama Otomatis di atas border ---
+    drawAutoNameOnBorder(ctx, cw, ch);
 }
 
 // =============================================
@@ -763,8 +722,8 @@ function bakeEditorToCapture() {
         }
     }
 
-    // 3. Gambar stiker nama dengan posisi/skala/rotasi dari Step 3 (permanen, tanpa selection box)
-    drawNameSticker(ctx, cw, ch, false);
+    // 3. Gambar Teks Nama Otomatis di atas border
+    drawAutoNameOnBorder(ctx, cw, ch);
 
     // Simpan ke Blob PNG untuk upload
     return new Promise((resolve) => {
@@ -776,109 +735,48 @@ function bakeEditorToCapture() {
 }
 
 // =============================================
-// EDITOR DRAG (MOUSE) — FOTO & STIKER
+// EDITOR DRAG (MOUSE) — FOTO
 // =============================================
 
 editorCanvas.addEventListener('mousedown', (e) => {
-    const rect = editorCanvas.getBoundingClientRect();
-    const scaleRatio = editorCanvas.width / rect.width;
-    const canvasX = (e.clientX - rect.left) * scaleRatio;
-    const canvasY = (e.clientY - rect.top) * scaleRatio;
-
-    if (isPointInSticker(canvasX, canvasY)) {
-        // Klik di stiker -> geser stiker nama
-        activeDragTarget = 'sticker';
-        sticker.isDragging = true;
-        sticker.hasCustomPos = true;
-        const scaleX = editorCanvas.width / DESIGN_WIDTH;
-        const scaleY = editorCanvas.height / DESIGN_HEIGHT;
-        sticker.dragOffsetDesignX = sticker.designX - (canvasX / scaleX);
-        sticker.dragOffsetDesignY = sticker.designY - (canvasY / scaleY);
-    } else {
-        // Klik di kanvas -> geser foto latar belakang
-        activeDragTarget = 'photo';
-        editor.isDragging = true;
-        editor.lastX = e.clientX;
-        editor.lastY = e.clientY;
-    }
-    renderEditor();
+    editor.isDragging = true;
+    editor.lastX = e.clientX;
+    editor.lastY = e.clientY;
+    editorCanvas.style.cursor = 'grabbing';
 });
 
 window.addEventListener('mousemove', (e) => {
+    if (!editor.isDragging) return;
     const rect = editorCanvas.getBoundingClientRect();
     const scaleRatio = editorCanvas.width / rect.width;
-
-    if (!activeDragTarget) {
-        // Cek hover untuk mengganti kursor jika mouse di atas stiker
-        const canvasX = (e.clientX - rect.left) * scaleRatio;
-        const canvasY = (e.clientY - rect.top) * scaleRatio;
-        if (isPointInSticker(canvasX, canvasY)) {
-            editorCanvas.style.cursor = 'move';
-        } else {
-            editorCanvas.style.cursor = 'grab';
-        }
-        return;
-    }
-
-    if (activeDragTarget === 'sticker') {
-        const canvasX = (e.clientX - rect.left) * scaleRatio;
-        const canvasY = (e.clientY - rect.top) * scaleRatio;
-        const scaleX = editorCanvas.width / DESIGN_WIDTH;
-        const scaleY = editorCanvas.height / DESIGN_HEIGHT;
-        sticker.designX = (canvasX / scaleX) + sticker.dragOffsetDesignX;
-        sticker.designY = (canvasY / scaleY) + sticker.dragOffsetDesignY;
-        renderEditor();
-    } else if (activeDragTarget === 'photo' && editor.isDragging) {
-        const dx = e.clientX - editor.lastX;
-        const dy = e.clientY - editor.lastY;
-        editor.lastX = e.clientX;
-        editor.lastY = e.clientY;
-        editor.photoX += dx * scaleRatio;
-        editor.photoY += dy * scaleRatio;
-        renderEditor();
-    }
+    const dx = e.clientX - editor.lastX;
+    const dy = e.clientY - editor.lastY;
+    editor.lastX = e.clientX;
+    editor.lastY = e.clientY;
+    editor.photoX += dx * scaleRatio;
+    editor.photoY += dy * scaleRatio;
+    renderEditor();
 });
 
 window.addEventListener('mouseup', () => {
-    if (activeDragTarget) {
-        activeDragTarget = null;
+    if (editor.isDragging) {
         editor.isDragging = false;
-        sticker.isDragging = false;
-        renderEditor();
+        editorCanvas.style.cursor = 'grab';
     }
 });
 
 // =============================================
-// EDITOR DRAG + PINCH (TOUCH) — FOTO & STIKER
+// EDITOR DRAG + PINCH (TOUCH) — FOTO
 // =============================================
 
 editorCanvas.addEventListener('touchstart', (e) => {
     e.preventDefault();
     if (e.touches.length === 1) {
-        const rect = editorCanvas.getBoundingClientRect();
-        const scaleRatio = editorCanvas.width / rect.width;
-        const canvasX = (e.touches[0].clientX - rect.left) * scaleRatio;
-        const canvasY = (e.touches[0].clientY - rect.top) * scaleRatio;
-
-        if (isPointInSticker(canvasX, canvasY)) {
-            activeDragTarget = 'sticker';
-            sticker.isDragging = true;
-            sticker.hasCustomPos = true;
-            const scaleX = editorCanvas.width / DESIGN_WIDTH;
-            const scaleY = editorCanvas.height / DESIGN_HEIGHT;
-            sticker.dragOffsetDesignX = sticker.designX - (canvasX / scaleX);
-            sticker.dragOffsetDesignY = sticker.designY - (canvasY / scaleY);
-        } else {
-            activeDragTarget = 'photo';
-            editor.isDragging = true;
-            editor.lastX = e.touches[0].clientX;
-            editor.lastY = e.touches[0].clientY;
-        }
-        renderEditor();
+        editor.isDragging = true;
+        editor.lastX = e.touches[0].clientX;
+        editor.lastY = e.touches[0].clientY;
     } else if (e.touches.length === 2) {
-        activeDragTarget = null;
         editor.isDragging = false;
-        sticker.isDragging = false;
         editor.lastPinchDist = Math.hypot(
             e.touches[0].clientX - e.touches[1].clientX,
             e.touches[0].clientY - e.touches[1].clientY
@@ -891,24 +789,14 @@ editorCanvas.addEventListener('touchmove', (e) => {
     const rect = editorCanvas.getBoundingClientRect();
     const scaleRatio = editorCanvas.width / rect.width;
 
-    if (e.touches.length === 1) {
-        if (activeDragTarget === 'sticker') {
-            const canvasX = (e.touches[0].clientX - rect.left) * scaleRatio;
-            const canvasY = (e.touches[0].clientY - rect.top) * scaleRatio;
-            const scaleX = editorCanvas.width / DESIGN_WIDTH;
-            const scaleY = editorCanvas.height / DESIGN_HEIGHT;
-            sticker.designX = (canvasX / scaleX) + sticker.dragOffsetDesignX;
-            sticker.designY = (canvasY / scaleY) + sticker.dragOffsetDesignY;
-            renderEditor();
-        } else if (activeDragTarget === 'photo' && editor.isDragging) {
-            const dx = e.touches[0].clientX - editor.lastX;
-            const dy = e.touches[0].clientY - editor.lastY;
-            editor.lastX = e.touches[0].clientX;
-            editor.lastY = e.touches[0].clientY;
-            editor.photoX += dx * scaleRatio;
-            editor.photoY += dy * scaleRatio;
-            renderEditor();
-        }
+    if (e.touches.length === 1 && editor.isDragging) {
+        const dx = e.touches[0].clientX - editor.lastX;
+        const dy = e.touches[0].clientY - editor.lastY;
+        editor.lastX = e.touches[0].clientX;
+        editor.lastY = e.touches[0].clientY;
+        editor.photoX += dx * scaleRatio;
+        editor.photoY += dy * scaleRatio;
+        renderEditor();
     } else if (e.touches.length === 2) {
         const dist = Math.hypot(
             e.touches[0].clientX - e.touches[1].clientX,
@@ -925,11 +813,8 @@ editorCanvas.addEventListener('touchmove', (e) => {
 
 editorCanvas.addEventListener('touchend', (e) => {
     if (e.touches.length === 0) {
-        activeDragTarget = null;
         editor.isDragging = false;
-        sticker.isDragging = false;
         editor.lastPinchDist = 0;
-        renderEditor();
     }
 }, { passive: false });
 
@@ -1117,7 +1002,26 @@ btnRetake.addEventListener('click', () => {
 
 // === Multi-Step Navigation Buttons ===
 
+// Step 0 (Welcome Screen) -> Step 1
+const welcomeStep = document.getElementById('step0');
+if (welcomeStep) {
+    welcomeStep.addEventListener('click', () => {
+        goToStep(1);
+    });
+}
+
+// Step 3 (Ending / Thank You Screen) -> Step 1 (Langsung buka Step 1 untuk pengunjung berikutnya)
+const endingStep = document.getElementById('step3');
+if (endingStep) {
+    endingStep.addEventListener('click', () => {
+        goToStep(1);
+    });
+}
+
+
+
 // Step 1 -> Step 2
+
 btnGoToStep2.addEventListener('click', () => {
     // Validasi Nama wajib diisi sebelum lanjut
     const namaInput = document.getElementById('nama');
@@ -1129,27 +1033,15 @@ btnGoToStep2.addEventListener('click', () => {
         return;
     }
 
-    // Sinkronkan nama ke stiker nama jika belum diedit manual
-    if (!sticker.text || sticker.text === sticker._lastAutoName) {
-        sticker.text = namaVal;
-        sticker._lastAutoName = namaVal;
-        if (stickerTextInput) {
-            stickerTextInput.value = namaVal;
-        }
-    }
-
-    // Tempatkan stiker di banner default jika posisi belum diubah manual
-    if (!sticker.hasCustomPos) {
-        const def = BORDER_STICKER_DEFAULTS[selectedBorderId] || BORDER_STICKER_DEFAULTS[0];
-        sticker.designX = def.x;
-        sticker.designY = def.y;
-        sticker.rotation = def.rotation !== undefined ? def.rotation : 0;
-        if (stickerRotateSlider) stickerRotateSlider.value = sticker.rotation;
-        if (stickerRotateVal) stickerRotateVal.textContent = (sticker.rotation > 0 ? `+${sticker.rotation}` : sticker.rotation) + '°';
+    if (namaVal.length > 8) {
+        namaInput.focus();
+        showStatus('Nama maksimal 8 huruf!', 'error');
+        setTimeout(hideStatus, 3000);
+        return;
     }
 
     goToStep(2);
-    // Inisialisasi editor Twibbon dengan state default
+    // Inisialisasi editor Twibbon dengan border terpilih
     initEditor(selectedBorderId);
 });
 
@@ -1158,37 +1050,16 @@ btnBackToStep1.addEventListener('click', () => {
     goToStep(1);
 });
 
-// Step 2 -> Step 3
-btnGoToStep3.addEventListener('click', () => {
-    goToStep(3);
-    // bakeEditorToCapture dipanggil saat user klik submit (setelah stiker diedit di Step 3)
-});
-
-// Step 3 -> Step 2
-btnBackToStep2.addEventListener('click', () => {
-    goToStep(2);
-});
-
 // Event listener untuk tombol pilihan border di Step 2
 borderButtons.forEach(btn => {
     btn.addEventListener('click', () => {
         const borderId = parseInt(btn.dataset.borderId, 10);
+        selectedBorderId = borderId;
 
         // Ganti class active ke tombol yang sedang diklik
         borderButtons.forEach(b => b.classList.toggle('active', b === btn));
 
-        // Jika posisi stiker belum pernah di-drag kustom oleh user,
-        // sesuaikan posisinya & kemiringannya ke banner border yang baru dipilih
-        if (!sticker.hasCustomPos) {
-            const def = BORDER_STICKER_DEFAULTS[borderId] || BORDER_STICKER_DEFAULTS[0];
-            sticker.designX = def.x;
-            sticker.designY = def.y;
-            sticker.rotation = def.rotation !== undefined ? def.rotation : 0;
-            if (stickerRotateSlider) stickerRotateSlider.value = sticker.rotation;
-            if (stickerRotateVal) stickerRotateVal.textContent = (sticker.rotation > 0 ? `+${sticker.rotation}` : sticker.rotation) + '°';
-        }
-
-        // Inisialisasi ulang editor dengan border baru
+        // Inisialisasi ulang editor dengan border baru & render nama otomatis
         initEditor(borderId);
     });
 });
@@ -1310,7 +1181,7 @@ form.addEventListener('submit', async (e) => {
     hideStatus();
 
     try {
-        // Bake final composite (foto + border + stiker dari Step 3)
+        // Bake final composite (foto + border + stiker dari Step 2)
         showStatus('Memproses gambar...', 'loading');
         await bakeEditorToCapture();
 
@@ -1318,31 +1189,32 @@ form.addEventListener('submit', async (e) => {
             throw new Error('Gagal memproses gambar, coba lagi.');
         }
 
+        // Tampilkan Cosmic Loading Screen animasi kosmik yang smooth
+        goToStep('loading');
+
         // Kompres gambar
         const compressed = await compressImage(capturedBlob);
 
-        // Upload ke Supabase Storage
+        // Upload ke Supabase Storage & Simpan metadata ke database secara paralel/berurutan
         const imageUrl = await uploadToStorage(compressed);
-
-        // Simpan metadata ke database
         await saveToDatabase(nama, caption, imageUrl);
 
-        // Sukses!
-        showStatus('Berhasil dikirim! Robot kamu sedang bersiap', 'success');
+        // Beri waktu jeda animasi kosmik (~1.8 detik) agar transisi terasa smooth dan tidak kaku
+        await new Promise(resolve => setTimeout(resolve, 1800));
 
-        // Reset semua state
+        // Reset semua state form & editor
         form.reset();
         capturedBlob = null;
         rawImageSrc = null;
         compositeImg = null;
         capturedImg.src = '';
         btnGoToStep2.disabled = true;
-        selectedBorderId = 0;
+        selectedBorderId = 1;
         editor.photoImg = null;
         sticker.text = '';
         sticker.hasCustomPos = false;
-        // Reset border button active ke "Polos"
-        borderButtons.forEach(btn => btn.classList.toggle('active', parseInt(btn.dataset.borderId, 10) === 0));
+        // Reset border button active ke Frame 1
+        borderButtons.forEach(btn => btn.classList.toggle('active', parseInt(btn.dataset.borderId, 10) === 1));
         // Clear canvas
         if (editorCanvas) {
             const ctx = editorCanvas.getContext('2d');
@@ -1353,13 +1225,18 @@ form.addEventListener('submit', async (e) => {
             ctx.clearRect(0, 0, stickerCanvas.width, stickerCanvas.height);
         }
         setCameraState('idle');
-        goToStep(1);
+
+        // Pindah dengan mulus ke Ending / Thank You Screen
+        goToStep(3);
 
     } catch (error) {
         console.error('[app.js] Upload error:', error);
+        // Kembalikan ke Step 2 jika terjadi error
+        goToStep(2);
         showStatus(`Gagal: ${error.message}`, 'error');
 
     } finally {
         setLoading(false);
     }
 });
+

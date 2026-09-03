@@ -21,8 +21,18 @@ if (typeof ENV === 'undefined') {
 }
 
 // === SUPABASE CLIENT ===
-const supabaseClient = supabase.createClient(ENV.SUPABASE_URL, ENV.SUPABASE_ANON_KEY);
+if (!ENV.SUPABASE_URL || !ENV.SUPABASE_ANON_KEY) {
+    console.warn('[config.js] Kredensial Supabase di js/env.js belum diisi!');
+}
+
+let supabaseClient;
+try {
+    supabaseClient = supabase.createClient(ENV.SUPABASE_URL, ENV.SUPABASE_ANON_KEY);
+} catch (err) {
+    console.error('[config.js] Gagal inisialisasi Supabase client:', err.message);
+}
 
 // === CONSTANTS (digunakan oleh app.js) ===
-const DB_TABLE      = ENV.DB_TABLE;
-const STORAGE_BUCKET = ENV.STORAGE_BUCKET;
+const DB_TABLE       = ENV.DB_TABLE || 'pengunjung';
+const STORAGE_BUCKET = ENV.STORAGE_BUCKET || 'foto-robot';
+

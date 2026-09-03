@@ -33,6 +33,56 @@
 
 <body>
 
+    <!-- =============================================
+         STEP 0: WELCOME SCREEN
+         ============================================= -->
+    <div id="step0" class="welcome-step">
+
+        <!-- Headline 3D Graphic -->
+        <img src="assets/WelcomeScene/Headline.png" alt="Welcome to Hope Corner" class="ws-headline">
+
+        <!-- Portal Island -->
+        <img src="assets/WelcomeScene/Pulau.png" alt="Portal Island" class="ws-pulau">
+
+        <!-- Tap to Start -->
+        <p class="ws-tap tap-to-start">*TAP ANYWHERE TO START*</p>
+
+    </div>
+
+    <!-- =============================================
+         STEP 3: ENDING / THANK YOU SCREEN
+         ============================================= -->
+    <div id="step3" class="welcome-step ending-step" style="display: none;">
+
+        <!-- Thank You 3D Graphic -->
+        <img src="assets/WelcomeScene/Thankyou.png" alt="Thank You!" class="ws-headline">
+
+        <!-- Portal Island -->
+        <img src="assets/WelcomeScene/Pulau.png" alt="Portal Island" class="ws-pulau">
+
+        <!-- Tap to Restart / Return -->
+        <p class="ws-tap tap-to-start">*TAP ANYWHERE TO RESTART*</p>
+
+    </div>
+
+    <!-- =============================================
+         COSMIC LOADING SCREEN
+         ============================================= -->
+    <div id="loadingScreen" class="welcome-step loading-step" style="display: none;">
+        <div class="loading-content">
+            <div class="cosmic-portal-spinner">
+                <div class="portal-ring ring-1"></div>
+                <div class="portal-ring ring-2"></div>
+                <div class="portal-core"></div>
+            </div>
+            <p class="loading-title">MEMPROSES FOTO KAMU...</p>
+            <p class="loading-subtext">Mengirim avatar ke proyektor 🚀</p>
+        </div>
+    </div>
+
+
+
+
     <!-- Main Card -->
     <div class="card" role="main">
 
@@ -61,16 +111,19 @@
         <!-- Upload Form -->
         <form id="uploadForm" class="form" novalidate>
 
+
+
             <!-- =============================================
                  STEP 1: DATA & SELFIE
                  ============================================= -->
-            <div id="step1" class="step-content active">
+            <div id="step1" class="step-content">
+
 
                 <!-- Nama -->
                 <div class="form-group">
                     <label class="form-label" for="nama">Nama</label>
                     <input type="text" id="nama" class="form-input" placeholder="Contoh: Firman"
-                        autocomplete="given-name" required>
+                        autocomplete="given-name" maxlength="15" required>
                 </div>
 
                 <!-- Caption -->
@@ -155,11 +208,7 @@
                 <div class="border-selector-container-step">
                     <p class="border-selector-title">Pilih Desain Frame</p>
                     <div class="border-options-grid">
-                        <button type="button" class="border-grid-btn active" data-border-id="0">
-                            <div class="border-thumb thumb-none">Polos</div>
-                            <span class="border-thumb-label">Polos</span>
-                        </button>
-                        <button type="button" class="border-grid-btn" data-border-id="1">
+                        <button type="button" class="border-grid-btn active" data-border-id="1">
                             <div class="border-thumb" style="background-image: url('assets/borders/BORDER_1.png')">
                             </div>
                             <span class="border-thumb-label">Frame 1</span>
@@ -189,112 +238,14 @@
 
 
 
-                <!-- Tombol Navigasi Step 2 -->
+                <!-- Status Message -->
+                <div id="status" class="status" role="status" aria-live="polite"></div>
+
+                <!-- Tombol Navigasi Step 2 (Submit Langsung) -->
                 <div class="step-nav-buttons">
                     <button type="button" id="btnBackToStep1" class="btn-nav btn-back">
                         Foto Ulang
                     </button>
-                    <button type="button" id="btnGoToStep3" class="btn-nav btn-next">
-                        Lanjut
-                    </button>
-                </div>
-            </div>
-
-            <!-- =============================================
-                 STEP 3: KONFIRMASI & EDIT STIKER
-                 ============================================= -->
-            <div id="step3" class="step-content">
-
-                <!-- Canvas Interaktif Step 3 (Stiker bisa di-drag & pinch) -->
-                <div class="editor-wrapper" style="position:relative;">
-                    <canvas id="stickerCanvas" class="editor-canvas"></canvas>
-                    <p class="editor-hint">Cubit untuk ukuran & miring • Geser stiker</p>
-                </div>
-
-                <!-- Panel Stiker Nama Kustom -->
-                <div class="sticker-settings-card">
-                    <div class="sticker-header">
-                        <div class="sticker-header-left">
-                            <div>
-                                <span class="sticker-title">Stiker Nama</span>
-                                <span class="sticker-subtitle">Cubit di kanvas untuk resize & rotasi</span>
-                            </div>
-                        </div>
-                        <label class="toggle-switch" title="Aktifkan/Nonaktifkan Stiker Nama">
-                            <input type="checkbox" id="toggleSticker" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-
-                    <div id="stickerControlsBody" class="sticker-body">
-                        <!-- Input Teks Stiker -->
-                        <div class="sticker-field">
-                            <label class="sticker-field-label" for="stickerTextInput">Teks Nama Stiker</label>
-                            <input type="text" id="stickerTextInput" class="form-input sticker-input"
-                                placeholder="Tulis nama stiker..." maxlength="25">
-                        </div>
-
-                        <!-- Ukuran Stiker Slider & Tombol -->
-                        <div class="sticker-field">
-                            <div class="sticker-field-header">
-                                <label class="sticker-field-label" for="stickerSizeSlider">Ukuran Stiker</label>
-                                <span id="stickerSizeVal" class="sticker-val-badge">100%</span>
-                            </div>
-                            <div class="sticker-size-row">
-                                <button type="button" id="btnStickerShrink" class="btn-sticker-step"
-                                    title="Kecilkan Stiker">-</button>
-                                <input type="range" id="stickerSizeSlider" class="sticker-range" min="40" max="220"
-                                    value="100" step="5">
-                                <button type="button" id="btnStickerEnlarge" class="btn-sticker-step"
-                                    title="Besarkan Stiker">+</button>
-                            </div>
-                        </div>
-
-                        <!-- Rotasi Stiker Slider & Tombol -->
-                        <div class="sticker-field">
-                            <div class="sticker-field-header">
-                                <label class="sticker-field-label" for="stickerRotateSlider">Rotasi (Kemiringan)</label>
-                                <span id="stickerRotateVal" class="sticker-val-badge">-3°</span>
-                            </div>
-                            <div class="sticker-size-row">
-                                <button type="button" id="btnStickerRotateLeft" class="btn-sticker-step"
-                                    title="Putar Kiri">Putar Kiri</button>
-                                <input type="range" id="stickerRotateSlider" class="sticker-range" min="-45" max="45"
-                                    value="-3" step="1">
-                                <button type="button" id="btnStickerRotateRight" class="btn-sticker-step"
-                                    title="Putar Kanan">Putar Kanan</button>
-                            </div>
-                        </div>
-
-                        <!-- Tombol Aksi Stiker -->
-                        <div class="sticker-actions-row">
-                            <button type="button" id="btnResetStickerPos" class="btn-sticker-action">
-                                Reset Posisi ke Banner Bawah
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="confirm-meta-card">
-                    <div class="confirm-meta-item">
-                        <span class="confirm-meta-label">Nama</span>
-                        <span id="confirmNama" class="confirm-meta-val">-</span>
-                    </div>
-                    <div class="confirm-meta-item">
-                        <span class="confirm-meta-label">Pesan / Caption</span>
-                        <span id="confirmCaption" class="confirm-meta-val">-</span>
-                    </div>
-                </div>
-
-                <!-- Status Message -->
-                <div id="status" class="status" role="status" aria-live="polite"></div>
-
-                <!-- Tombol Navigasi Step 3 -->
-                <div class="step-nav-buttons">
-                    <button type="button" id="btnBackToStep2" class="btn-nav btn-back">
-                        Ganti Border
-                    </button>
-                    <!-- Submit Button -->
                     <button type="submit" id="submitBtn" class="btn-submit">
                         Kirim ke Proyektor
                     </button>

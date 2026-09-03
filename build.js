@@ -8,11 +8,29 @@
 const fs = require('fs');
 const path = require('path');
 
-// 1. Ambil env variables dari dashboard Vercel / environment system
-const SUPABASE_URL = process.env.SUPABASE_URL || '';
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || '';
-const DB_TABLE = process.env.DB_TABLE || 'pengunjung';
-const STORAGE_BUCKET = process.env.STORAGE_BUCKET || 'foto-robot';
+// Helper untuk membaca .env jika tersedia (saat build lokal)
+let localEnv = {};
+const envPath = path.join(__dirname, '.env');
+if (fs.existsSync(envPath)) {
+    const lines = fs.readFileSync(envPath, 'utf8').split('\n');
+    lines.forEach(line => {
+        const trimmed = line.trim();
+        if (trimmed && !trimmed.startsWith('#')) {
+            const parts = trimmed.split('=');
+            if (parts.length >= 2) {
+                const key = parts[0].trim();
+                const val = parts.slice(1).join('=').trim();
+                localEnv[key] = val;
+            }
+        }
+    });
+}
+
+// 1. Ambil env variables dari process.env (Vercel) atau fallback ke .env lokal
+const SUPABASE_URL = process.env.SUPABASE_URL || localEnv.SUPABASE_URL || '';
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || localEnv.SUPABASE_ANON_KEY || '';
+const DB_TABLE = process.env.DB_TABLE || localEnv.DB_TABLE || 'pengunjung';
+const STORAGE_BUCKET = process.env.STORAGE_BUCKET || localEnv.STORAGE_BUCKET || 'foto-robot';
 
 // 2. Format content file js/env.js
 const fileContent = `/**
@@ -36,4 +54,5 @@ if (!fs.existsSync(targetDir)) {
 const targetPath = path.join(targetDir, 'env.js');
 fs.writeFileSync(targetPath, fileContent, 'utf8');
 
-console.log('✅ File js/env.js berhasil digenerate otomatis untuk build!');
+console.log('✅ File js/env.js berhasil digenerate!');
+
