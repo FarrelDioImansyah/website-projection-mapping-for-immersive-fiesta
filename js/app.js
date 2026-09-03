@@ -1052,18 +1052,43 @@ btnGoToStep2.addEventListener('click', () => {
         return;
     }
 
-    // Validasi Filter Kata Kasar / Toxic (Badwords) — Tolak dan beri peringatan
-    if (typeof containsBadWords === 'function') {
+    // Validasi Moderasi Konten (Badwords, Hate Speech, Provokasi, Spam)
+    if (typeof moderateText === 'function') {
+        const namaCheck = moderateText(namaVal);
+        if (!namaCheck.allow) {
+            namaInput.focus();
+            let msg = 'Nama mengandung kata yang tidak pantas!';
+            if (namaCheck.hateWords.length > 0) msg = 'Nama mengandung ujaran kebencian!';
+            if (namaCheck.spam.isSpam) msg = 'Nama tidak boleh mengandung link / nomor telepon!';
+            showStatus(msg, 'error');
+            setTimeout(hideStatus, 3500);
+            return;
+        }
+
+        if (captionVal) {
+            const captionCheck = moderateText(captionVal);
+            if (!captionCheck.allow) {
+                captionInput.focus();
+                let msg = 'Caption mengandung kata yang tidak pantas!';
+                if (captionCheck.hateWords.length > 0) msg = 'Caption mengandung ujaran kebencian!';
+                if (captionCheck.provocationWords.length > 0) msg = 'Caption mengandung kata bernuansa provokasi/kekerasan!';
+                if (captionCheck.spam.isSpam) msg = 'Caption tidak boleh mengandung link / nomor telepon / promosi!';
+                showStatus(msg, 'error');
+                setTimeout(hideStatus, 3500);
+                return;
+            }
+        }
+    } else if (typeof containsBadWords === 'function') {
         if (containsBadWords(namaVal)) {
             namaInput.focus();
-            showStatus('Nama mengandung kata yang tidak pantas! Mohon ganti.', 'error');
+            showStatus('Nama mengandung kata yang tidak pantas!', 'error');
             setTimeout(hideStatus, 3500);
             return;
         }
 
         if (captionVal && containsBadWords(captionVal)) {
             captionInput.focus();
-            showStatus('Caption mengandung kata yang tidak pantas! Mohon perbaiki.', 'error');
+            showStatus('Caption mengandung kata yang tidak pantas!', 'error');
             setTimeout(hideStatus, 3500);
             return;
         }
@@ -1211,8 +1236,21 @@ form.addEventListener('submit', async (e) => {
         return;
     }
 
-    // Validasi Filter Kata Kasar
-    if (typeof containsBadWords === 'function') {
+    // Validasi Moderasi Konten pada Submit
+    if (typeof moderateText === 'function') {
+        const namaCheck = moderateText(nama);
+        if (!namaCheck.allow) {
+            showStatus('Nama mengandung kata yang tidak pantas / dilarang!', 'error');
+            return;
+        }
+        if (caption) {
+            const captionCheck = moderateText(caption);
+            if (!captionCheck.allow) {
+                showStatus('Caption mengandung konten yang tidak diperbolehkan!', 'error');
+                return;
+            }
+        }
+    } else if (typeof containsBadWords === 'function') {
         if (containsBadWords(nama)) {
             showStatus('Nama mengandung kata yang tidak pantas!', 'error');
             return;
