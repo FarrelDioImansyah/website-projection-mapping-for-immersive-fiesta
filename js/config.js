@@ -21,16 +21,16 @@ if (typeof ENV === 'undefined') {
 }
 
 // === SUPABASE CLIENT ===
-if (!ENV.SUPABASE_URL || !ENV.SUPABASE_ANON_KEY) {
-    console.warn('[config.js] Kredensial Supabase di js/env.js belum diisi!');
-}
+const supabaseUrl = ENV.SUPABASE_URL || 'https://ctmatazowxbgaunhfbfe.supabase.co';
+const supabaseKey = ENV.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0bWF0YXpvd3hiZ2F1bmhmYmZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyNDM1NTQsImV4cCI6MjA5ODgxOTU1NH0.4jQFd84-iqr63mcbiM5xWzGTSdEpHnun0vRHRgGp_Zk';
 
 let supabaseClient;
 try {
-    supabaseClient = supabase.createClient(ENV.SUPABASE_URL, ENV.SUPABASE_ANON_KEY);
+    supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 } catch (err) {
     console.error('[config.js] Gagal inisialisasi Supabase client:', err.message);
 }
+
 
 // === CONSTANTS (digunakan oleh app.js) ===
 const DB_TABLE       = ENV.DB_TABLE || 'pengunjung';

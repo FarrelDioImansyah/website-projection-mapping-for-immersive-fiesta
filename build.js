@@ -26,11 +26,12 @@ if (fs.existsSync(envPath)) {
     });
 }
 
-// 1. Ambil env variables dari process.env (Vercel) atau fallback ke .env lokal
-const SUPABASE_URL = process.env.SUPABASE_URL || localEnv.SUPABASE_URL || '';
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || localEnv.SUPABASE_ANON_KEY || '';
+// 1. Ambil env variables dari process.env (Vercel) atau fallback ke kredensial default
+const SUPABASE_URL = process.env.SUPABASE_URL || localEnv.SUPABASE_URL || 'https://ctmatazowxbgaunhfbfe.supabase.co';
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || localEnv.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0bWF0YXpvd3hiZ2F1bmhmYmZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyNDM1NTQsImV4cCI6MjA5ODgxOTU1NH0.4jQFd84-iqr63mcbiM5xWzGTSdEpHnun0vRHRgGp_Zk';
 const DB_TABLE = process.env.DB_TABLE || localEnv.DB_TABLE || 'pengunjung';
 const STORAGE_BUCKET = process.env.STORAGE_BUCKET || localEnv.STORAGE_BUCKET || 'foto-robot';
+
 
 // 2. Format content file js/env.js
 const fileContent = `/**
