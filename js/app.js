@@ -402,9 +402,9 @@ function drawAutoNameOnBorder(ctx, cw, ch) {
     const posX = def.x * scaleX;
     const posY = def.y * scaleY;
 
-    // Ukuran dasar font pada desain 1920x1080
-    const baseFontSize = 60;
-    const fontSize = Math.max(16, Math.round(baseFontSize * scaleX));
+    // Ukuran dasar font pada desain 1920x1080 (+4px hingga +6px lebih besar, semi-bold)
+    const baseFontSize = 66;
+    const fontSize = Math.max(18, Math.round(baseFontSize * scaleX));
 
     ctx.save();
     ctx.translate(posX, posY);
@@ -413,10 +413,10 @@ function drawAutoNameOnBorder(ctx, cw, ch) {
     const rotRad = ((def.rotation || 0) * Math.PI) / 180;
     ctx.rotate(rotRad);
 
-    // Font Berlin Sans / Trebuchet MS dengan warna Hitam Pekat
-    const fontFamily = "'Berlin Sans FB', 'Berlin Sans FB Demi', 'Berlin Sans', 'Trebuchet MS', 'Arial Black', sans-serif";
+    // Font Berlin Sans / Trebuchet MS dengan weight semi-bold (600)
+    const fontFamily = "'Berlin Sans FB', 'Berlin Sans FB Demi', 'Berlin Sans', 'Plus Jakarta Sans', 'Trebuchet MS', sans-serif";
 
-    ctx.font = `bold ${fontSize}px ${fontFamily}`;
+    ctx.font = `600 ${fontSize}px ${fontFamily}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
@@ -1240,7 +1240,7 @@ async function uploadToStorage(compressedFile) {
 }
 
 /**
- * Simpan metadata pengunjung ke tabel database.
+ * Simpan metadata pengunjung ke tabel database dengan status pending (Moderasi Admin).
  * @param {string} nama
  * @param {string} caption
  * @param {string} imageUrl
@@ -1248,11 +1248,118 @@ async function uploadToStorage(compressedFile) {
 async function saveToDatabase(nama, caption, imageUrl) {
     showStatus('Menyimpan data ke Database...', 'loading');
 
-    const { error: dbError } = await supabaseClient
+    // Cek indikator kata terlarang untuk otomatis memberikan tanda 'is_flagged' di Admin Dashboard
+    let isFlagged = false;
+    if (typeof moderateText === 'function') {
+        const checkNama = moderateText(nama);
+        const checkCaption = caption ? moderateText(caption) : { allow: true };
+        if (!checkNama.allow || !checkCaption.allow) {
+            isFlagged = true;
+        }
+    } else if (typeof containsBadWords === 'function') {
+        if (containsBadWords(nama) || (caption && containsBadWords(caption))) {
+            isFlagged = true;
+        }
+    }
+
+    let insertRes = await supabaseClient
         .from(DB_TABLE)
-        .insert([{ nama, caption, image_url: imageUrl }]);
+        .insert([{
+            nama,
+            caption,
+            image_url: imageUrl,
+            status: 'pending',
+            is_flagged: isFlagged
+        }])
+        .select('id, status')
+        .single();
+
+    let dbError = insertRes.error;
+    let data = insertRes.data;
+
+    // Fallback jika kolom status / is_flagged belum ditambahkan di tabel Supabase
+    if (dbError && (dbError.code === 'PGRST204' || (dbError.message && (dbError.message.includes('status') || dbError.message.includes('column'))))) {
+        console.warn('[app.js] Kolom status/is_flagged belum ada di Supabase, mencoba insert fallback standar...');
+        const fallback = await supabaseClient
+            .from(DB_TABLE)
+            .insert([{ nama, caption, image_url: imageUrl }])
+            .select('id')
+            .single();
+        dbError = fallback.error;
+        data = fallback.data;
+    }
 
     if (dbError) throw dbError;
+    return data;
+}
+
+/**
+ * Menunggu Panitia melakukan Approve / Reject pada Admin Dashboard secara Realtime.
+ * @param {number|string} entryId
+ * @returns {Promise<'approved'|'rejected'>}
+ */
+function waitForAdminReview(entryId) {
+    return new Promise((resolve) => {
+        if (!entryId) {
+            // Jeda fallback jika ID tidak didapat
+            setTimeout(() => resolve('approved'), 3000);
+            return;
+        }
+
+        let channel = null;
+        let pollTimer = null;
+        let isDone = false;
+
+        function cleanup() {
+            if (channel) supabaseClient.removeChannel(channel);
+            if (pollTimer) clearInterval(pollTimer);
+        }
+
+        function finish(resultStatus) {
+            if (isDone) return;
+            isDone = true;
+            cleanup();
+            resolve(resultStatus);
+        }
+
+        // 1. Supabase Realtime Listener khusus ID pengiriman ini
+        try {
+            channel = supabaseClient
+                .channel(`visitor-review-${entryId}`)
+                .on(
+                    'postgres_changes',
+                    { event: 'UPDATE', schema: 'public', table: DB_TABLE, filter: `id=eq.${entryId}` },
+                    (payload) => {
+                        const newStatus = payload.new ? payload.new.status : null;
+                        if (newStatus === 'approved' || newStatus === 'rejected') {
+                            finish(newStatus);
+                        }
+                    }
+                )
+                .subscribe();
+        } catch (err) {
+            console.warn('[app.js] Realtime review listener error:', err);
+        }
+
+        // 2. Fallback polling setiap 2 detik jika realtime terkendala
+        pollTimer = setInterval(async () => {
+            try {
+                const { data, error } = await supabaseClient
+                    .from(DB_TABLE)
+                    .select('status')
+                    .eq('id', entryId)
+                    .single();
+
+                if (!error && data && data.status) {
+                    if (data.status === 'approved' || data.status === 'rejected') {
+                        finish(data.status);
+                    }
+                }
+            } catch (pollErr) {
+                // Ignore poll error
+            }
+        }, 2000);
+    });
 }
 
 // =============================================
@@ -1316,18 +1423,24 @@ form.addEventListener('submit', async (e) => {
             throw new Error('Gagal memproses gambar, coba lagi.');
         }
 
-        // Tampilkan Cosmic Loading Screen animasi kosmik yang smooth
+        // Tampilkan Cosmic Loading Screen animasi kosmik
         goToStep('loading');
+
+        // Update teks loading screen menjadi Menunggu Review Panitia
+        const loadingTitle = document.getElementById('loadingTitle');
+        const loadingSubtext = document.getElementById('loadingSubtext');
+        if (loadingTitle) loadingTitle.textContent = 'MENUNGGU REVIEW PANITIA... ⏳';
+        if (loadingSubtext) loadingSubtext.innerHTML = 'Foto &amp; caption kamu sedang direview panitia.<br>Mohon tunggu sejenak, avatar kamu akan langsung tayang setelah disetujui! 🚀';
 
         // Kompres gambar
         const compressed = await compressImage(capturedBlob);
 
-        // Upload ke Supabase Storage & Simpan metadata ke database secara paralel/berurutan
+        // Upload ke Supabase Storage & Simpan metadata ke database
         const imageUrl = await uploadToStorage(compressed);
-        await saveToDatabase(nama, caption, imageUrl);
+        const record = await saveToDatabase(nama, caption, imageUrl);
 
-        // Beri waktu jeda animasi kosmik (~1.8 detik) agar transisi terasa smooth dan tidak kaku
-        await new Promise(resolve => setTimeout(resolve, 1800));
+        // Tahan layar loading sampai panitia menekan Approve / Reject di Admin Dashboard
+        const reviewResult = await waitForAdminReview(record ? record.id : null);
 
         // Reset semua state form & editor
         form.reset();
@@ -1353,8 +1466,14 @@ form.addEventListener('submit', async (e) => {
         }
         setCameraState('idle');
 
-        // Pindah dengan mulus ke Ending / Thank You Screen
-        goToStep(3);
+        if (reviewResult === 'approved') {
+            // Pindah dengan mulus ke Ending / Thank You Screen
+            goToStep(3);
+        } else {
+            // Kembali ke Step 1 jika ditolak panitia
+            goToStep(1);
+            showStatus('Foto / caption kamu tidak disetujui panitia. Silakan coba foto ulang.', 'error');
+        }
 
     } catch (error) {
         console.error('[app.js] Upload error:', error);

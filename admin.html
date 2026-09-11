@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Moderation | Immersive Fiesta 2026</title>
+    <meta name="description" content="Dashboard Moderasi Panitia Immersive Fiesta 2026 - Realtime Review Photo Projection Mapping">
+
+    <!-- Favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%237000FF'/></svg>">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/admin.css">
+
+    <!-- External Libraries -->
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+
+    <!-- App & Admin Scripts (load order: env → config → admin) -->
+    <script src="js/env.js" defer></script>
+    <script src="js/config.js" defer></script>
+    <script src="js/admin.js" defer></script>
+</head>
+
+<body class="admin-body">
+
+    <!-- =============================================
+         PIN AUTHENTICATION MODAL (KEAMANAN PANITIA)
+         ============================================= -->
+    <div id="pinModal" class="modal-overlay">
+        <div class="pin-card glass-panel">
+            <div class="pin-header">
+                <div class="pin-icon">🔐</div>
+                <h2>Akses Moderasi Panitia</h2>
+                <p>Masukkan 4-digit PIN Admin untuk mengakses dashboard</p>
+            </div>
+            <form id="pinForm" autocomplete="off">
+                <div class="pin-input-group">
+                    <input type="password" id="pinInput" maxlength="6" placeholder="Masukkan PIN..." autofocus required>
+                    <button type="submit" class="btn-pin-submit">Masuk 🚀</button>
+                </div>
+                <p id="pinError" class="pin-error-msg hidden">PIN salah! Coba lagi.</p>
+            </form>
+            <p class="pin-hint">PIN Default: <code>1234</code></p>
+        </div>
+    </div>
+
+    <!-- =============================================
+         IMAGE ZOOM MODAL
+         ============================================= -->
+    <div id="imageModal" class="modal-overlay hidden">
+        <div class="zoom-card glass-panel">
+            <button id="btnCloseZoom" class="btn-close-modal">&times;</button>
+            <img id="zoomedImg" src="" alt="Zoom Preview">
+            <div class="zoom-details">
+                <h3 id="zoomedNama"></h3>
+                <p id="zoomedCaption"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- =============================================
+         MAIN ADMIN DASHBOARD APP
+         ============================================= -->
+    <div id="adminApp" class="admin-wrapper hidden">
+
+        <!-- Top Header & Branding -->
+        <header class="admin-header glass-panel">
+            <div class="header-left">
+                <div class="brand-badges">
+                    <span class="brand-badge-pens">PENS</span>
+                    <span class="brand-badge-trm">TRM</span>
+                    <span class="brand-badge-fiesta">IMMERSIVE FIESTA 2026</span>
+                </div>
+                <h1 class="admin-title">Dashboard Moderasi Proyektor</h1>
+            </div>
+
+            <div class="header-right">
+                <!-- Status Sinkronisasi Realtime -->
+                <div id="realtimeBadge" class="status-live-pill offline">
+                    <span class="pulse-dot"></span>
+                    <span id="realtimeText">Connecting...</span>
+                </div>
+
+                <!-- Lock Dashboard Button -->
+                <button id="btnLockAdmin" class="btn-header-action" title="Kunci Dashboard">
+                    🔒 Kunci PIN
+                </button>
+            </div>
+        </header>
+
+        <!-- Stats Overview Cards -->
+        <section class="stats-grid">
+            <div class="stat-card stat-pending glass-panel" id="statCardPending">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-info">
+                    <span class="stat-label">Perlu Review (Pending)</span>
+                    <span class="stat-value" id="countPending">0</span>
+                </div>
+            </div>
+
+            <div class="stat-card stat-approved glass-panel">
+                <div class="stat-icon">✅</div>
+                <div class="stat-info">
+                    <span class="stat-label">Disetujui (Di Proyektor)</span>
+                    <span class="stat-value" id="countApproved">0</span>
+                </div>
+            </div>
+
+            <div class="stat-card stat-rejected glass-panel">
+                <div class="stat-icon">🚫</div>
+                <div class="stat-info">
+                    <span class="stat-label">Ditolak</span>
+                    <span class="stat-value" id="countRejected">0</span>
+                </div>
+            </div>
+
+            <div class="stat-card stat-flagged glass-panel">
+                <div class="stat-icon">⚠️</div>
+                <div class="stat-info">
+                    <span class="stat-label">Terindikasi Badword</span>
+                    <span class="stat-value" id="countFlagged">0</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Control Toolbar & Filter Tabs -->
+        <section class="admin-toolbar glass-panel">
+            <div class="toolbar-tabs">
+                <button class="tab-btn active" data-tab="pending">
+                    ⏳ Perlu Review (<span id="tabCountPending">0</span>)
+                </button>
+                <button class="tab-btn" data-tab="approved">
+                    ✅ Disetujui (<span id="tabCountApproved">0</span>)
+                </button>
+                <button class="tab-btn" data-tab="rejected">
+                    🚫 Ditolak (<span id="tabCountRejected">0</span>)
+                </button>
+                <button class="tab-btn" data-tab="all">
+                    📋 Semua Data (<span id="tabCountAll">0</span>)
+                </button>
+            </div>
+
+            <div class="toolbar-actions">
+                <!-- Search Box -->
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Cari nama atau caption...">
+                </div>
+
+                <!-- Bulk Actions -->
+                <div class="bulk-buttons">
+                    <button id="btnApproveAll" class="btn-bulk btn-bulk-approve" title="Setujui Semua Pending">
+                        ✓ Setujui Semua Pending
+                    </button>
+                    <button id="btnRejectAll" class="btn-bulk btn-bulk-reject" title="Tolak Semua Pending">
+                        ✕ Tolak Semua Pending
+                    </button>
+                    <button id="btnRefresh" class="btn-bulk btn-bulk-refresh" title="Refresh Data">
+                        🔄 Refresh
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Moderation Grid -->
+        <main class="moderation-container">
+            <div id="emptyState" class="empty-state glass-panel hidden">
+                <div class="empty-icon">🎉</div>
+                <h3>Tidak Ada Antrean Moderasi</h3>
+                <p id="emptySubtext">Semua foto pengunjung sudah selesai direview oleh panitia.</p>
+            </div>
+
+            <div id="cardsGrid" class="cards-grid">
+                <!-- Dynamic cards populated by admin.js -->
+            </div>
+        </main>
+
+        <!-- Toast Notifications Container -->
+        <div id="toastContainer" class="toast-container"></div>
+
+    </div>
+
+</body>
+
+</html>

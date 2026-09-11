@@ -1,215 +1,130 @@
 /**
- * badwords.js — Daftar Kata Terlarang (Filter Kata Kasar / Toxic) v2
- * ================================================================
+ * badwords.js — Engine Filter Kata Terlarang (Badwords & Toxic Moderation) v3
+ * =========================================================================
  *
- * ⚠️ CATATAN PENTING:
- * Tidak ada filter berbasis wordlist yang 100% tanpa celah. Orang tetap bisa
- * bypass lewat gambar/screenshot, singkatan aneh yang belum terdaftar, atau
- * bahasa/dialek yang belum masuk daftar. File ini menutup celah-celah TEKNIS
- * paling umum (leetspeak, huruf berulang, spasi, homoglyph unicode), tapi
- * sebaiknya tetap dipasangkan dengan validasi di server (jangan hanya
- * mengandalkan filter client-side, karena JS di browser bisa dimatikan/diubah).
- *
- * 💡 CARA MENAMBAHKAN KATA BARU:
- * 1. Buka file ini (js/badwords.js).
- * 2. Tambahkan kata baru di dalam daftar BAD_WORDS di bawah (tulis dengan huruf kecil).
- * 3. Pisahkan dengan tanda koma (,).
- *
- * Contoh:
- *   'kata1',
- *   'kata2',
- *
- * 💡 CARA MENAMBAHKAN KATA AMAN (biar tidak salah tangkap / false positive):
- * Tambahkan ke daftar WHITELIST di bawah. Berguna untuk kata yang kebetulan
- * mengandung potongan huruf yang mirip kata terlarang, misalnya "asuransi"
- * (mengandung "asu") atau "pantai"/"santai" (mengandung "tai").
+ * 💡 FITUR ENGINE DETEKSI:
+ * 1. Despacing otomatis untuk kata yang diselipi spasi/simbol (e.g. "a s u", "k o n t o l", "m.e.m.e.k", "f u c k").
+ * 2. Normalisasi Leetspeak & Homoglyph Unicode (e.g. "k0nt1l", "4nj1ng", "m3m3k", "goblq").
+ * 3. Pencocokan Imbuhan / Akhiran Indonesia (e.g. "asumu", "tainya", "anjingnya", "kontolers").
+ * 4. Whitelist kata aman untuk mencegah false positive pada nama pengunjung (e.g. "Agus", "Budi", "Basuki", "Taufik", "Pantai", "Asuransi").
  */
 
 const BAD_WORDS = [
-    // --- Bahasa Indonesia ---
-    'anjing',
-    'babi',
-    'bangsat',
-    'kontol',
-    'memek',
-    'pantek',
-    'pepek',
-    'puki',
-    'ngentot',
-    'ngentod',
-    'jembut',
-    'itil',
-    'pler',
-    'tolol',
-    'goblok',
-    'idiot',
-    'bego',
-    'bajingan',
-    'kampret',
-    'tai',
-    'taek',
-    'asu',
-    'jancok',
-    'dancok',
-    'ancok',
-    'peli',
-    'lonte',
-    'tete',
-    'tetek',
-    'bokep',
-    'porno',
-    'titit',
+    // --- Bahasa Indonesia & Slang Utama ---
+    'anjing', 'anjg', 'anj', 'anjir', 'anjrit', 'anjrot', 'anjay', 'anjeng', 'anjinx', 'anjinq', 'anjink', 'anjingg',
+    'babi', 'bb', 'bbq',
+    'bangsat', 'bgst', 'bgsd', 'bajingan', 'bjngn', 'kampret', 'kmprt',
+    'kontol', 'qontol', 'qontl', 'kntl', 'ktl', 'kn7l', 'k0nt0l', 'k0nt1l', 'kontil', 'kintil', 'kontolers', 'kontoler', 'kontl',
+    'memek', 'memeq', 'mmk', 'm3m3k', 'm3m3q', 'pepek', 'ppk', 'puki', 'pukimak', 'pukima', 'kimak',
+    'pantek', 'pntk', 'pntq', 'pante',
+    'ngentot', 'ngentod', 'ng3nt0t', 'ng3ntod', 'ngent0t', 'ngewe', 'ngewet', 'ngw',
+    'jembut', 'jmbt', 'itil', 'pler', 'peler', 'plr', 'pl3r', 'p1er', 'pier',
+    'tolol', 'tll', 'goblok', 'gblk', 'goblog', 'goblq', 'goblk', 'bego', 'begok', 'dongo', 'dongok', 'pekok', 'idiot', 'autis', 'sarap', 'sinting',
+    'tai', 'taek', 'taii', 'asu', 'asoe', 'asuu',
+    'jancok', 'dancok', 'ancok', 'jancuk', 'dancuk', 'jancuq', 'dancuq', 'cok', 'cuk', 'coeg', 'jnck', 'janck', 'jncok', 'jncuk', 'j4nck',
+    'peli', 'lonte', 'l0nt3', 'lont3', 'perek', 'prk', 'jablay', 'jablai', 'tete', 'tetek', 'toket', 'tkt', 'titit', 'tt', 'biji',
+    'bokep', 'porno', 'seks', 'sex', 'crot', 'sperma', 'colmek', 'colik', 'ngocok', 'sange', 'sangek', 'toge',
+    'cuki', 'cukimay', 'cukimai', 'telaso', 'sundala', 'bodat', 'bacot', 'bct',
+    'open bo', 'openbo', 'vcs', 'bo',
 
     // --- Bahasa Inggris ---
-    'fuck',
-    'fucker',
-    'fucking',
-    'bitch',
-    'asshole',
-    'shit',
-    'dick',
-    'pussy',
-    'cunt',
-    'bastard',
-    'whore',
-    'slut',
-    'nigger',
-    'nigga',
-    'nude',
-    'porn',
-    'sex',
-
-    // Tambahkan kata terlarang lainnya di sini...
+    'fuck', 'fucker', 'fucking', 'fck', 'fckin', 'bitch', 'btch', 'asshole', 'shit', 'dick', 'pussy', 'cunt', 'bastard', 'btrd', 'whore', 'slut', 'nigger', 'nigga', 'nude', 'porn', 'sex'
 ];
 
 /**
- * Kata-kata yang AMAN meskipun mengandung potongan huruf kata terlarang.
- * Dicek sebelum pencocokan "compact" (tanpa spasi) supaya tidak salah tangkap.
- * Tambahkan kata lain di sini kalau ketemu false positive baru.
+ * Daftar kata AMAN yang mengandung potongan huruf kata terlarang.
+ * Mencegah kesalahan tangkap (false positive) pada nama atau kata sehari-hari.
  */
 const WHITELIST = [
-    'asuransi', 'asuh', 'asupan', 'terbiasa', 'biasa', 'asumsi',
-    'pantai', 'santai', 'petai', 'retail', 'detail', 'portable',
-    'pelita', 'pelihara', 'pelindung', 'pelipis', 'peluit', 'kepeli',
+    'asuransi', 'asuh', 'asupan', 'terbiasa', 'biasa', 'asumsi', 'masuk', 'masukan', 'pengasuh', 'asrama', 'khas', 'dinas', 'agustinus', 'bagus', 'agus', 'basuki', 'dias',
+    'pantai', 'santai', 'petai', 'retail', 'detail', 'portable', 'lantai', 'taat', 'tertai',
+    'pelita', 'pelihara', 'pelindung', 'pelipis', 'peluit', 'kepeli', 'komplit',
     'tetes', 'tetesan', 'tetangga', 'tetap', 'tetamu',
-    'istilah', 'sextant', 'context', 'sussex', 'middlesex',
-    // Tambahkan kata aman lainnya di sini...
+    'istilah', 'sextant', 'context', 'sussex', 'middlesex', 'text', 'textile',
+    'cokelat', 'coklat', 'cuaca', 'cukup', 'kecukupan',
+    'muka', 'mukena', 'kompas', 'kompak', 'kamus', 'goyang', 'goyangku',
+    'budi', 'taufik', 'siti', 'rian', 'dian', 'anisa', 'putri', 'rudi', 'dodi', 'yudi', 'ahmad'
 ];
 
-/**
- * Kata penghinaan/ujaran kebencian bernuansa SARA (suku/agama/ras/golongan)
- * atau politik-identitas. PENTING: ini daftar ISTILAH PENGHINAAN yang dipakai
- * untuk MENYERANG kelompok tertentu — bukan nama suku/agama/kelompok itu
- * sendiri (nama kelompok TIDAK boleh diblokir, itu diskriminatif).
- * Tambahkan istilah penghinaan lain di sini sesuai kebutuhan acara.
- */
 const HATE_WORDS = [
-    'aseng',
-    'cino',
-    'kadrun',
-    'cebong',
-    'komunis', // sering dipakai sebagai tuduhan/hinaan, bukan istilah netral di caption publik
-    'kafir',   // rawan dipakai menyerang, hati-hati potensi false positive pada diskusi agama yang sah
-    // Tambahkan istilah penghinaan SARA/politik lain di sini...
+    'aseng', 'cino', 'kadrun', 'cebong', 'komunis', 'kafir', 'pribumi', 'cina'
 ];
 
-/**
- * Kata yang mengindikasikan provokasi/ajakan kekerasan. Karena kata-kata ini
- * juga bisa muncul dalam konteks wajar (idiom, berita, dsb), sebaiknya JANGAN
- * auto-block permanen — lebih aman untuk auto-hold (tahan dulu, cek admin)
- * daripada auto-reject.
- */
 const PROVOCATION_WORDS = [
-    'bunuh',
-    'bakar',
-    'serang',
-    'hancurkan',
-    'basmi',
-    'tumpas',
-    'perang',
-    'bom',
-    'teroris',
-    // Tambahkan kata provokasi lain di sini...
+    'bunuh', 'bakar', 'serang', 'hancurkan', 'basmi', 'tumpas', 'perang', 'bom', 'teroris'
 ];
 
-/**
- * Peta leetspeak (angka/simbol -> huruf).
- * Urutan penting: yang lebih spesifik taruh belakangan kalau ada bentrok.
- */
 const LEET_MAP = {
-    '4': 'a', '@': 'a', '^': 'a', 'д': 'a', 'а': 'a',
+    '4': 'a', '@': 'a', '^': 'a', 'д': 'a', 'а': 'a', 'α': 'a',
     '8': 'b', 'в': 'b',
-    '(': 'c', '<': 'c', 'с': 'c',
+    '(': 'c', '<': 'c', 'с': 'c', '[': 'c', '{': 'c',
     '3': 'e', '€': 'e', 'е': 'e', 'э': 'e',
     '6': 'g', '9': 'g',
     '1': 'i', '!': 'i', '|': 'i', '¡': 'i', 'і': 'i',
-    '0': 'o', 'о': 'o',
+    '0': 'o', 'о': 'o', 'ø': 'o',
     '5': 's', '$': 's',
     '7': 't', '+': 't', 'т': 't',
-    'у': 'y',
-    'х': 'x',
-    'р': 'p',
-    'н': 'n',
-    'м': 'm',
-    'к': 'k',
+    'v': 'u', 'µ': 'u',
+    'у': 'y', 'х': 'x', 'р': 'p', 'н': 'n', 'м': 'm', 'к': 'k',
 };
 
-/**
- * Menghapus karakter zero-width / tak terlihat yang sering disisipkan
- * di antara huruf untuk mengelabui filter (mis. "a​n​j​i​n​g" pakai zero-width space).
- */
 function stripInvisibleChars(text) {
     return text.replace(/[\u200B-\u200F\u202A-\u202E\uFEFF\u00AD]/g, '');
 }
 
-/**
- * Mengganti karakter leetspeak/homoglyph menjadi huruf latin biasa.
- */
 function applyLeetMap(text) {
     return text.replace(/./g, (ch) => LEET_MAP[ch] || ch);
 }
 
-/**
- * Meruntuhkan huruf yang diulang-ulang jadi satu (fuuuuck -> fuck, anjjjinggg -> anjing).
- * Batasnya 2x berturut-turut supaya kata sah seperti "lebah" atau "kaabah" tidak rusak parah.
- */
-function collapseRepeats(text) {
-    return text.replace(/(.)\1{2,}/g, '$1$1').replace(/(.)\1/g, (match, ch, offset, str) => {
-        return match; // biarkan double letter wajar (contoh: "pass", "lebah")
-    });
+function normalizePhonetic(text) {
+    return text
+        .replace(/q/g, 'k')
+        .replace(/x/g, 'g');
 }
 
 /**
- * Menghasilkan dua bentuk teks ternormalisasi:
- * - spaced  : simbol/spasi tetap jadi pemisah kata (dipakai untuk cek \b batas kata)
- * - compact : semua non a-z0-9 dibuang total (dipakai untuk menangkap kata yang
- *             sengaja dipisah spasi/simbol, misal "a n j i n g" atau "f.u.c.k")
+ * Menggabungkan huruf-huruf tunggal yang dipisah spasi / simbol.
+ * Contoh: "a s u" -> "asu", "a_s_u" -> "asu", "m . e . m . e . k" -> "memek"
  */
-function normalize(text) {
-    let t = stripInvisibleChars(text)
+function despaceSingleLetters(text) {
+    let cleaned = text.replace(/[\._\-\*\s]+/g, ' ');
+    return cleaned.replace(/\b([a-z0-9])\s+(?=[a-z0-9]\b)/gi, '$1');
+}
+
+function normalizeAll(text) {
+    let raw = stripInvisibleChars(text)
         .toLowerCase()
         .normalize('NFKD')
-        .replace(/[\u0300-\u036f]/g, ''); // buang diakritik (café -> cafe)
+        .replace(/[\u0300-\u036f]/g, '');
 
-    t = applyLeetMap(t);
+    let leet = applyLeetMap(raw);
+    let leetPhonetic = normalizePhonetic(leet);
 
-    // Kolaps huruf sama yang diulang lebih dari 2x (fuuuuck -> fuuck -> nanti match substring "fuck")
-    t = t.replace(/(.)\1{2,}/g, '$1$1');
-    // Kolaps sekali lagi jadi tunggal khusus untuk versi compact (biar "aanjjiing" -> "anjing")
-    const singleCollapsed = t.replace(/(.)\1+/g, '$1');
+    let despaced = despaceSingleLetters(leetPhonetic);
 
-    const spaced = t.replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+    let doubleCollapsed = leetPhonetic.replace(/(.)\1{2,}/g, '$1$1');
+    let singleCollapsed = leetPhonetic.replace(/(.)\1+/g, '$1');
+    let singleCollapsedDespaced = despaced.replace(/(.)\1+/g, '$1');
+
+    const spaced = leetPhonetic.replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+    const despacedSpaced = despaced.replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+
     const compact = singleCollapsed.replace(/[^a-z0-9]/g, '');
+    const compactDespaced = singleCollapsedDespaced.replace(/[^a-z0-9]/g, '');
 
-    return { spaced, compact };
+    return {
+        raw,
+        spaced,
+        despacedSpaced,
+        compact,
+        compactDespaced,
+        singleCollapsed,
+        singleCollapsedDespaced
+    };
 }
 
-/**
- * Menghapus semua kemunculan kata whitelist dari teks compact,
- * supaya tidak memicu false positive pada pencocokan substring.
- */
-function stripWhitelisted(compactText) {
-    let result = compactText;
+function stripWhitelisted(text) {
+    let result = text;
     for (const safe of WHITELIST) {
         const s = safe.trim().toLowerCase();
         if (!s) continue;
@@ -219,43 +134,69 @@ function stripWhitelisted(compactText) {
 }
 
 /**
- * Memeriksa apakah teks mengandung kata-kata yang dilarang.
- * Mendukung deteksi leetspeak, homoglyph, huruf berulang, dan kata yang
- * sengaja dipisah spasi/simbol untuk menghindari filter.
- *
- * @param {string} text - Teks yang akan dicek (Nama atau Caption)
+ * Memeriksa apakah teks mengandung kata terlarang.
+ * @param {string} text
  * @param {object} [options]
- * @param {boolean} [options.detail=false] - Jika true, kembalikan detail kata yang cocok, bukan cuma boolean
  * @returns {boolean|{matched: boolean, words: string[]}}
  */
 function containsBadWords(text, options = {}) {
     const { detail = false } = options;
-
     if (!text || typeof text !== 'string') {
         return detail ? { matched: false, words: [] } : false;
     }
 
-    const { spaced, compact } = normalize(text);
-    const compactSafe = stripWhitelisted(compact);
+    const norm = normalizeAll(text);
+    const compactSafe = stripWhitelisted(norm.compact);
+    const compactDespacedSafe = stripWhitelisted(norm.compactDespaced);
 
     const foundWords = new Set();
+    const suffixPattern = '(?:mu|nya|ku|lu|el|er|ers|an|k|q|z|s|h|i|a)?';
+
+    const allTokens = new Set([
+        ...norm.spaced.split(/\s+/),
+        ...norm.despacedSpaced.split(/\s+/),
+        ...norm.singleCollapsed.split(/[^a-z0-9]+/),
+        ...norm.singleCollapsedDespaced.split(/[^a-z0-9]+/)
+    ]);
 
     for (const raw of BAD_WORDS) {
         const word = raw.trim().toLowerCase();
         if (!word) continue;
 
-        // 1) Cek batas kata pada versi "spaced" (presisi tinggi, minim false positive)
-        const boundaryRegex = new RegExp(`\\b${escapeRegExp(word)}\\b`, 'i');
-        if (boundaryRegex.test(spaced)) {
+        const regexWithSuffix = new RegExp(`\\b${escapeRegExp(word)}${suffixPattern}\\b`, 'i');
+
+        // 0. Direct Raw Check (untuk frasa khusus seperti "open bo", "vcs")
+        if (new RegExp(`\\b${escapeRegExp(word)}${suffixPattern}\\b`, 'i').test(norm.raw)) {
             foundWords.add(word);
             continue;
         }
 
-        // 2) Cek substring pada versi "compact" (menangkap kata yang dipisah spasi/simbol)
-        //    Kata sangat pendek (<=3 huruf) TIDAK dicek di sini untuk mencegah
-        //    ledakan false positive dari kata umum yang mengandung 3 huruf itu.
-        if (word.length >= 4 && compactSafe.includes(word)) {
+        // 1. Spaced & Despaced Boundary Regex Match
+        if (regexWithSuffix.test(norm.spaced) || regexWithSuffix.test(norm.despacedSpaced)) {
             foundWords.add(word);
+            continue;
+        }
+
+        // 2. Tokenized Exact Match
+        for (const token of allTokens) {
+            if (!token) continue;
+            if (WHITELIST.includes(token)) continue;
+
+            if (token === word || new RegExp(`^${escapeRegExp(word)}${suffixPattern}$`, 'i').test(token)) {
+                foundWords.add(word);
+                break;
+            }
+        }
+
+        // 3. Compact Substring Match
+        if (word.length >= 4) {
+            if (compactSafe.includes(word) || compactDespacedSafe.includes(word)) {
+                foundWords.add(word);
+            }
+        } else if (word.length >= 2) {
+            if (allTokens.has(word)) {
+                foundWords.add(word);
+            }
         }
     }
 
@@ -265,57 +206,36 @@ function containsBadWords(text, options = {}) {
     return foundWords.size > 0;
 }
 
-/**
- * Mengecek apakah daftar kata tertentu (mis. HATE_WORDS, PROVOCATION_WORDS)
- * muncul di teks. Logikanya sama seperti containsBadWords tapi dipakai
- * untuk daftar kata lain, supaya tidak duplikasi kode.
- */
 function matchWordList(text, wordList) {
-    const { spaced, compact } = normalize(text);
-    const compactSafe = stripWhitelisted(compact);
+    if (!text || typeof text !== 'string') return [];
+    const norm = normalizeAll(text);
     const found = new Set();
 
     for (const raw of wordList) {
         const word = raw.trim().toLowerCase();
         if (!word) continue;
-
-        const boundaryRegex = new RegExp(`\\b${escapeRegExp(word)}\\b`, 'i');
-        if (boundaryRegex.test(spaced)) {
-            found.add(word);
-            continue;
-        }
-        if (word.length >= 4 && compactSafe.includes(word)) {
+        const regex = new RegExp(`\\b${escapeRegExp(word)}\\b`, 'i');
+        if (regex.test(norm.spaced) || regex.test(norm.despacedSpaced) || norm.compact.includes(word)) {
             found.add(word);
         }
     }
     return Array.from(found);
 }
 
-/**
- * Deteksi indikasi spam: URL, nomor telepon/WA, atau teks yang di-flood
- * (kata/karakter yang sama diulang berkali-kali). Berguna untuk caption
- * publik di projection mapping supaya tidak disalahgunakan untuk promosi.
- *
- * @param {string} text
- * @returns {{isSpam: boolean, reasons: string[]}}
- */
 function detectSpam(text) {
     if (!text || typeof text !== 'string') return { isSpam: false, reasons: [] };
 
     const reasons = [];
     const t = text.toLowerCase();
 
-    // URL / domain
     if (/(https?:\/\/|www\.|\.(com|net|id|org|xyz|info)\b)/i.test(t)) {
         reasons.push('url');
     }
 
-    // Nomor telepon/WA Indonesia (08xxxxxxxxxx atau +62xxxxxxxxxx)
     if (/(\+?62|0)8[0-9]{8,12}/.test(t.replace(/[\s\-()]/g, ''))) {
         reasons.push('nomor_telepon');
     }
 
-    // Kata/frasa yang sama diulang berkali-kali (mis. "beli beli beli beli murah murah murah")
     const words = t.trim().split(/\s+/).filter(Boolean);
     if (words.length >= 6) {
         const freq = {};
@@ -324,33 +244,17 @@ function detectSpam(text) {
         if (maxFreq / words.length > 0.5) reasons.push('flood_kata');
     }
 
-    // Karakter tunggal diulang sangat banyak (mis. "aaaaaaaaaaaaaaaaaaaa")
     if (/(.)\1{9,}/.test(t)) reasons.push('flood_karakter');
 
     return { isSpam: reasons.length > 0, reasons };
 }
 
-/**
- * Fungsi moderasi gabungan — satu pintu untuk cek semua kategori sekaligus.
- * Cocok dipanggil sebelum caption ditampilkan di layar projection mapping.
- *
- * @param {string} text
- * @returns {{
- *   allow: boolean,
- *   action: 'reject' | 'hold' | 'allow',
- *   badWords: string[],
- *   hateWords: string[],
- *   provocationWords: string[],
- *   spam: {isSpam: boolean, reasons: string[]}
- * }}
- */
 function moderateText(text) {
     const badResult = containsBadWords(text, { detail: true });
     const hateWords = matchWordList(text, HATE_WORDS);
     const provocationWords = matchWordList(text, PROVOCATION_WORDS);
     const spam = detectSpam(text);
 
-    // Kata kasar / hate speech / spam -> langsung tolak otomatis
     if (badResult.matched || hateWords.length > 0 || spam.isSpam) {
         return {
             allow: false,
@@ -362,8 +266,6 @@ function moderateText(text) {
         };
     }
 
-    // Kata provokasi -> jangan auto-reject (rawan false positive/idiom),
-    // tapi tahan dulu untuk direview admin sebelum tayang.
     if (provocationWords.length > 0) {
         return {
             allow: false,
@@ -389,7 +291,6 @@ function escapeRegExp(str) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-// Untuk dipakai di Node.js (mis. validasi di server) sekaligus di browser
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         containsBadWords,
